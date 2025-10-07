@@ -12,7 +12,6 @@ const Landing = () => {
 
   const navigate = useNavigate();
   
-  // Redirect when connected
   useEffect(() => {
     if (isConnected) {
       navigate("/dashboard");
@@ -32,19 +31,12 @@ const Landing = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            {isConnected ? (
-              // go to dashboard
-              <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg font-medium">
-                {formatAddress(walletAddress)}
-              </div>
-            ) : (
-              <button 
-                onClick={handleConnectWallet}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition shadow-lg shadow-orange-500/30"
-              >
-                Connect Wallet
-              </button>
-            )}
+            <button 
+              onClick={handleConnectWallet}
+              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition shadow-lg shadow-orange-500/30"
+            >
+              Connect Wallet
+            </button>
           </div>
         </div>
       </nav>

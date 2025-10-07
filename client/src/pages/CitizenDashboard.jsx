@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Home, Search, MapPin, Bed, Bath, Maximize, ChevronRight, Calendar, Star, User, FileText, Send, Eye } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
@@ -15,7 +16,15 @@ const CitizenDashboard = () => {
   // Mock user role - you can replace this with actual role from smart contract
   const userRole = 'Land Owner'; // Can be: 'Super Admin', 'Local Admin', 'Land Owner', 'Buyer'
 
-  const { walletAddress } = useWeb3();
+  const { isConnected, walletAddress } = useWeb3();
+
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!isConnected) {
+      navigate("/");
+    } 
+  }, [isConnected, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">

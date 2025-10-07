@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Landing from './pages/Landing';
 import CitizenDashboard from './pages/CitizenDashboard';
+import Registration from './pages/Registration';
 
 function App() {
   
@@ -16,6 +17,11 @@ function App() {
         <Route path="/dashboard" element={ 
           <CitizenDashboard></CitizenDashboard>
         } />
+
+        <Route path="/register" element={
+          <Registration></Registration>
+        } />
+
       </Routes>
     </BrowserRouter>
   )

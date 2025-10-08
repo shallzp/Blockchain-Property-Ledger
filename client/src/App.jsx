@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import CitizenDashboard from './pages/CitizenDashboard';
 import Registration from './pages/Registration';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   
@@ -16,6 +18,14 @@ function App() {
 
         <Route path="/dashboard" element={ 
           <CitizenDashboard></CitizenDashboard>
+        } />
+
+        <Route path="/super" element={
+          <SuperAdminDashboard></SuperAdminDashboard>
+        } />
+
+        <Route path="/admin" element={
+          <AdminDashboard></AdminDashboard>
         } />
 
         <Route path="/register" element={

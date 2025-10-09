@@ -20,11 +20,11 @@ const CitizenDashboard = () => {
 
   const navigate = useNavigate();
   
-  useEffect(() => {
-    if (!isConnected) {
-      navigate("/");
-    } 
-  }, [isConnected, navigate]);
+  // useEffect(() => {
+  //   if (!isConnected) {
+  //     navigate("/");
+  //   } 
+  // }, [isConnected, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
@@ -36,7 +36,7 @@ const CitizenDashboard = () => {
         <div className="max-w-6xl mx-auto">
           {/* Main Content Area */}
           <div className="relative rounded-3xl overflow-hidden shadow-2xl" style={{
-            height: '500px'
+            height: '600px'
           }}>
             {/* Property Type Filters */}
             <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">

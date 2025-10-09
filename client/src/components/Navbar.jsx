@@ -1,33 +1,43 @@
-import { Home, Search, MapPin, Bed, Bath, Maximize, ChevronRight, Calendar, Star, User, FileText, Send, Eye } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Home, Search, User, FileText, Send, Eye } from 'lucide-react';
 
 
 const Navbar = ( props ) => {
+
+  const baseStyle = "px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2 rounded-lg";
+  const activeStyle = "px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm flex items-center gap-2";
+
   return (
     <nav className="flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-sm border-b border-gray-100">
       <div className="flex items-center gap-2">
         <img src="../Logo.png" className="w-8 h-8" />
-        <span className="text-xl font-bold text-gray-800">LandChain</span>
+        <span className="text-xl font-bold text-gray-800">PropChain</span>
       </div>
       
-      <div className="flex items-center gap-6">
-        <button className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm">
-          <Home className="inline w-4 h-4 mr-1" /> Home
-        </button>
-        <button className="px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2">
+      <div className="flex items-center gap-4">
+        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
+          <Home className="w-4 h-4" /> Home
+        </NavLink>
+
+        <NavLink to="/profile" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
           <User className="w-4 h-4" /> Profile
-        </button>
-        <button className="px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2">
+        </NavLink>
+
+        <NavLink to="/properties" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
           <FileText className="w-4 h-4" /> Properties
-        </button>
-        <button className="px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2">
+        </NavLink>
+
+        <NavLink to="/requests" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
           <Send className="w-4 h-4" /> Requests
-        </button>
-        <button className="px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2">
+        </NavLink>
+
+        <NavLink to="/requested" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
           <Eye className="w-4 h-4" /> Requested
-        </button>
-        <button className="px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2">
+        </NavLink>
+
+        <NavLink to="/explore" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
           <Search className="w-4 h-4" /> Explore
-        </button>
+        </NavLink>
       </div>
     
       <div className="flex items-center gap-3">

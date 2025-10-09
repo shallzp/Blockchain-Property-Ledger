@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.21;
 
-import "./Properties.sol";
-import "./LandRegistry.sol";
+import "./PropertyLedger.sol";
+import "./PropertyRegistry.sol";
 
-contract TransferOwnership {
+contract PropertyExchange {
 
-    Property private propertiesContract;
-    LandRegistry private LandRegistryContract;
+    PropertyLedger private propertiesContract;
+    PropertyRegistry private LandRegistryContract;
 
     constructor(address _landRegistryContractAddress){
-        LandRegistryContract = LandRegistry(_landRegistryContractAddress);
+        LandRegistryContract = PropertyRegistry(_landRegistryContractAddress);
         
         address propertiesContractAddress = LandRegistryContract.getPropertiesContract();  
 
-        propertiesContract = Property(propertiesContractAddress);
+        propertiesContract = PropertyLedger(propertiesContractAddress);
 
         LandRegistryContract.setTransferOwnershipContractAddress(address(this));
     }    

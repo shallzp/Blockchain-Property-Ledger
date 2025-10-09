@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.21;
 
-contract Users {
+contract UserRegistry {
 
     enum Role { None, MainAdministrator, RegionalAdmin, User }
 

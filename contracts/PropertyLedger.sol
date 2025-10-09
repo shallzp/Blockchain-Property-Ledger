@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.21;
 
-contract Property {
+contract PropertyLedger {
     
     enum StateOfProperty { 
         Registered, //Property added by Regional Admin; not yet verified on-chain.
@@ -65,43 +65,6 @@ contract Property {
     function getLandDetailsAsStruct(uint256 _propertyId) public view returns (Land memory) {
         return lands[_propertyId];
     }
-
-    // function getLandDetails(uint256 _propertyId) public view returns (
-    //     uint256 propertyId,
-    //     address owner,
-    //     address admin,
-    //     uint256 revenueDepartmentId,
-    //     uint256 locationId,
-    //     uint256 surveyNumber,
-    //     uint index,
-    //     uint256 area,
-    //     uint256 marketValue,
-    //     uint noOfRequests,
-    //     StateOfProperty state
-    // ) {
-    //     require(lands[_propertyId].propertyId != 0, "Land does not exist");
-
-    //     Land storage land = lands[_propertyId];
-
-    //     return (
-    //         land.propertyId,
-    //         land.owner,
-    //         land.admin,
-    //         land.revenueDepartmentId,
-    //         land.locationId,
-    //         land.surveyNumber,
-    //         land.index,
-    //         land.area,
-    //         land.marketValue,
-    //         land.noOfRequests,
-    //         land.state
-    //     );
-    // }
-
-    // function removeLand(uint256 _propertyId) public {
-    //     require(lands[_propertyId].propertyId != 0, "Land does not exist");
-    //     delete lands[_propertyId];
-    // }
     
     function updateLand(
         uint256 _propertyId,

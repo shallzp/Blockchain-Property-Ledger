@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.21;
 
-import "./Properties.sol";
+import "./PropertyLedger.sol";
 
-contract LandRegistry {
+contract PropertyRegistry {
     
     address private contractOwner;
     address private transferOwnershipContractAddress;
     bool private transferOwnershipContractAddressUpdated = false;
 
-    Property public propertiesContract;
+    PropertyLedger public propertiesContract;
 
     constructor() {
         contractOwner = msg.sender;
         transferOwnershipContractAddress = address(0);
         transferOwnershipContractAddressUpdated = false;
-        propertiesContract = new Property();
+        propertiesContract = new PropertyLedger();
     }
 
     modifier onlyOwner() {
@@ -56,14 +56,14 @@ contract LandRegistry {
     }
 
     // Get property details by property ID
-    function getPropertyDetails( uint256 _propertyId ) public view returns ( Property.Land memory ) {
+    function getPropertyDetails( uint256 _propertyId ) public view returns ( PropertyLedger.Land memory ) {
         return propertiesContract.getLandDetailsAsStruct(_propertyId);
     }
 
     // Get all properties of an owner
-    function getPropertiesOfOwner( address _owner ) public view returns ( Property.Land[] memory ) {
+    function getPropertiesOfOwner( address _owner ) public view returns ( PropertyLedger.Land[] memory ) {
         uint256[] memory propertyIds = propertiesOfOwner[_owner];
-        Property.Land[] memory properties = new Property.Land[](propertyIds.length);
+        PropertyLedger.Land[] memory properties = new PropertyLedger.Land[](propertyIds.length);
         
         for (uint256 i = 0; i < propertyIds.length; i++) {
             properties[i] = propertiesContract.getLandDetailsAsStruct(propertyIds[i]);
@@ -73,10 +73,10 @@ contract LandRegistry {
     }
 
     // Get properties by revenue department
-    function getPropertiesByRevenueDeptId( uint256 _revenueDeptId ) public view returns ( Property.Land[] memory ) {
+    function getPropertiesByRevenueDeptId( uint256 _revenueDeptId ) public view returns ( PropertyLedger.Land[] memory ) {
         uint256[] memory propertyIds = propertiesControlledByRevenueDept[_revenueDeptId];
         
-        Property.Land[] memory properties = new Property.Land[](propertyIds.length);
+        PropertyLedger.Land[] memory properties = new PropertyLedger.Land[](propertyIds.length);
         
         for (uint256 i = 0; i < propertyIds.length; i++) {
             properties[i] = propertiesContract.getLandDetailsAsStruct(propertyIds[i]);

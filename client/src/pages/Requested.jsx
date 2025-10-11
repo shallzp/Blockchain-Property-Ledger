@@ -1,75 +1,75 @@
-import { useState } from 'react';
-import { Eye, Clock, CheckCircle, XCircle, User, Home, MapPin, Calendar, DollarSign, AlertCircle } from 'lucide-react';
-
+import React, { useState } from 'react';
+import { Send, Clock, CheckCircle, XCircle, Eye, Home, MapPin, User, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
 const Requested = () => {
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // Requests received from buyers for user's properties
-  const receivedRequests = [
+  // Requests sent by current user to buy properties
+  const sentRequests = [
     {
       id: 1,
-      propertyId: '#4521',
-      property: 'Golden Springfield Villa',
-      location: 'Juhu, Mumbai',
-      buyer: 'Priya Sharma',
-      buyerWallet: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',
-      offerPrice: '12.5 ETH',
-      status: 'pending',
-      receivedDate: '2024-10-07',
-      message: 'Very interested in purchasing this beautiful villa. Ready to proceed immediately with full payment.',
-      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80'
-    },
-    {
-      id: 2,
       propertyId: '#892',
       property: 'Lake View Mansion',
       location: 'Powai, Mumbai',
-      buyer: 'Rajesh Kumar',
-      buyerWallet: '0x742d35Cc6634C0532925a3b844Bc9e7595f0A13f',
+      seller: 'Jane Smith',
+      sellerWallet: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063',
       offerPrice: '18.2 ETH',
       status: 'pending',
-      receivedDate: '2024-10-08',
-      message: 'Looking for a lakeside property. This matches my requirements perfectly.',
+      sentDate: '2024-10-08',
+      message: 'Interested in purchasing this property. Ready for immediate transaction.',
       image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80'
     },
     {
-      id: 3,
+      id: 2,
       propertyId: '#4521',
       property: 'Golden Springfield Villa',
       location: 'Juhu, Mumbai',
-      buyer: 'Amit Patel',
-      buyerWallet: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+      seller: 'John Doe',
+      sellerWallet: '0x742d35Cc6634C0532925a3b844Bc9e7595f0A13f',
       offerPrice: '12.5 ETH',
       status: 'accepted',
-      receivedDate: '2024-10-05',
+      sentDate: '2024-10-05',
       acceptedDate: '2024-10-06',
-      message: 'Interested in buying this property for my family.',
+      message: 'Very interested in this property. Can we proceed with the sale?',
       image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80'
+    },
+    {
+      id: 3,
+      propertyId: '#3341',
+      property: 'Downtown Apartment',
+      location: 'Bandra West, Mumbai',
+      seller: 'Amit Kumar',
+      sellerWallet: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+      offerPrice: '6.5 ETH',
+      status: 'rejected',
+      sentDate: '2024-10-02',
+      rejectedDate: '2024-10-03',
+      message: 'Would like to buy this apartment.',
+      image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80'
     }
   ];
 
-  const filteredRequests = receivedRequests.filter(request => {
+  const filteredRequests = sentRequests.filter(request => {
     if (filterStatus === 'all') return true;
     return request.status === filterStatus;
   });
 
   const stats = {
-    total: receivedRequests.length,
-    pending: receivedRequests.filter(r => r.status === 'pending').length,
-    accepted: receivedRequests.filter(r => r.status === 'accepted').length,
-    rejected: receivedRequests.filter(r => r.status === 'rejected').length
+    total: sentRequests.length,
+    pending: sentRequests.filter(r => r.status === 'pending').length,
+    accepted: sentRequests.filter(r => r.status === 'accepted').length,
+    rejected: sentRequests.filter(r => r.status === 'rejected').length
   };
 
-  const handleAcceptRequest = (requestId) => {
-    console.log('Accepting request:', requestId);
-    // TODO: Call contract function to accept purchase request
+  const handleCancelRequest = (requestId) => {
+    console.log('Canceling request:', requestId);
+    // TODO: Call contract function to cancel request
   };
 
-  const handleRejectRequest = (requestId) => {
-    console.log('Rejecting request:', requestId);
-    // TODO: Call contract function to reject purchase request
+  const handleConfirmPurchase = (requestId) => {
+    console.log('Confirming purchase:', requestId);
+    // TODO: Call contract function to complete purchase
   };
 
   return (
@@ -79,8 +79,8 @@ const Requested = () => {
       <div className="max-w-7xl mx-auto px-8 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Purchase Requests Received</h1>
-          <p className="text-gray-600">Manage purchase requests from potential buyers for your properties</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Purchase Requests</h1>
+          <p className="text-gray-600">Track all property purchase requests you've sent</p>
         </div>
 
         {/* Stats Cards */}
@@ -88,7 +88,7 @@ const Requested = () => {
           <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Eye className="w-6 h-6 text-blue-600" />
+                <Send className="w-6 h-6 text-blue-600" />
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900">{stats.total}</h3>
@@ -102,7 +102,7 @@ const Requested = () => {
               </div>
             </div>
             <h3 className="text-2xl font-bold text-gray-900">{stats.pending}</h3>
-            <p className="text-sm text-gray-500">Awaiting Response</p>
+            <p className="text-sm text-gray-500">Pending Response</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-lg border border-green-100 bg-green-50">
@@ -125,21 +125,6 @@ const Requested = () => {
             <p className="text-sm text-gray-500">Rejected</p>
           </div>
         </div>
-
-        {/* Alert for Pending Requests */}
-        {stats.pending > 0 && (
-          <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 mb-8 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-orange-500" />
-              <div>
-                <p className="font-semibold text-orange-900">Action Required</p>
-                <p className="text-sm text-orange-700">
-                  You have {stats.pending} pending purchase request{stats.pending > 1 ? 's' : ''} waiting for your response.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Filter */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-8">
@@ -196,7 +181,7 @@ const Requested = () => {
             <div
               key={request.id}
               className={`bg-white rounded-2xl shadow-lg border-2 p-6 ${
-                request.status === 'pending' ? 'border-orange-200 bg-orange-50' :
+                request.status === 'pending' ? 'border-orange-200' :
                 request.status === 'accepted' ? 'border-green-200' :
                 'border-gray-200'
               }`}
@@ -229,9 +214,9 @@ const Requested = () => {
 
                     <div>
                       {request.status === 'pending' && (
-                        <span className="px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-medium flex items-center gap-2 animate-pulse">
+                        <span className="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          Needs Response
+                          Pending
                         </span>
                       )}
                       {request.status === 'accepted' && (
@@ -250,24 +235,19 @@ const Requested = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <p className="text-xs text-gray-500 mb-1">Buyer</p>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          {request.buyer.charAt(0)}
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">{request.buyer}</p>
-                      </div>
-                      <p className="text-xs text-gray-600 font-mono">{request.buyerWallet}</p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-xs text-gray-500 mb-1">Seller</p>
+                      <p className="text-sm font-semibold text-gray-900">{request.seller}</p>
+                      <p className="text-xs text-gray-600 font-mono mt-1">{request.sellerWallet}</p>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <p className="text-xs text-gray-500 mb-1">Offered Price</p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-xs text-gray-500 mb-1">Your Offer</p>
                       <p className="text-2xl font-bold text-orange-600">{request.offerPrice}</p>
                     </div>
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <p className="text-xs text-blue-600 font-semibold mb-2">Buyer Message</p>
+                    <p className="text-xs text-blue-600 font-semibold mb-2">Your Message</p>
                     <p className="text-sm text-blue-900">{request.message}</p>
                   </div>
 
@@ -275,7 +255,7 @@ const Requested = () => {
                     <div className="text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>Received: {request.receivedDate}</span>
+                        <span>Sent: {request.sentDate}</span>
                       </div>
                       {request.acceptedDate && (
                         <div className="flex items-center gap-2 mt-1 text-green-600">
@@ -283,32 +263,37 @@ const Requested = () => {
                           <span>Accepted: {request.acceptedDate}</span>
                         </div>
                       )}
+                      {request.rejectedDate && (
+                        <div className="flex items-center gap-2 mt-1 text-red-600">
+                          <XCircle className="w-4 h-4" />
+                          <span>Rejected: {request.rejectedDate}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2">
                       {request.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleRejectRequest(request.id)}
-                            className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition flex items-center gap-2"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject
-                          </button>
-                          <button
-                            onClick={() => handleAcceptRequest(request.id)}
-                            className="px-6 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center gap-2"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Accept Offer
-                          </button>
-                        </>
+                        <button
+                          onClick={() => handleCancelRequest(request.id)}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition flex items-center gap-2"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Cancel Request
+                        </button>
                       )}
                       {request.status === 'accepted' && (
-                        <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm">
-                          Waiting for buyer to complete purchase
-                        </div>
+                        <button
+                          onClick={() => handleConfirmPurchase(request.id)}
+                          className="px-6 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center gap-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Complete Purchase
+                        </button>
                       )}
+                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center gap-2">
+                        <Eye className="w-4 h-4" />
+                        View Details
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -319,11 +304,11 @@ const Requested = () => {
 
         {filteredRequests.length === 0 && (
           <div className="bg-white rounded-2xl shadow-lg border-2 border-dashed border-gray-300 p-12 text-center">
-            <Eye className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Send className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-900 mb-2">No Requests Found</h3>
-            <p className="text-gray-600 mb-6">You have not received any purchase requests yet</p>
+            <p className="text-gray-600 mb-6">You haven't sent any purchase requests yet</p>
             <button className="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition">
-              List Property for Sale
+              Explore Properties
             </button>
           </div>
         )}

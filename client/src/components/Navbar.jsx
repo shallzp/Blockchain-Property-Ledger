@@ -28,11 +28,11 @@ const Navbar = ( props ) => {
         </NavLink>
 
         <NavLink to="/requests" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
-          <Send className="w-4 h-4" /> Requests
+          <Eye className="w-4 h-4" /> Requests
         </NavLink>
 
         <NavLink to="/requested" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>
-          <Eye className="w-4 h-4" /> Requested
+          <Send className="w-4 h-4" /> Requested
         </NavLink>
 
         <NavLink to="/explore" className={({ isActive }) => (isActive ? activeStyle : baseStyle)}>

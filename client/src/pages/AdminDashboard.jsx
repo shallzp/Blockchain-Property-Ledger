@@ -91,7 +91,7 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-orange-100 bg-orange-50">
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-orange-100">
             <div className="flex items-center justify-between mb-3">
               <Clock className="w-8 h-8 text-orange-500" />
               <span className="text-xs bg-orange-200 text-orange-700 px-2 py-1 rounded">Pending</span>

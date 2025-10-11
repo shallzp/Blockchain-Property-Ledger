@@ -7,6 +7,7 @@ import MainAdminDashboard from './pages/MainAdminDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Properties from './pages/Properties';
+import AddProperty from './pages/AddProperty';
 import Requests from './pages/Requests';
 import Requested from './pages/Requested';
 import Explore from './pages/Explore';
@@ -26,6 +27,7 @@ function App() {
 
         <Route path="/profile" element={ <Profile/> } />
         <Route path="/properties" element={ <Properties/> } />
+        <Route path="/add-property" element={ <AddProperty/> } />
         <Route path="/requests" element={ <Requests/> }/>
         <Route path="/requested" element={ <Requested/> }/>
         <Route path="/explore" element={ <Explore/> }/>

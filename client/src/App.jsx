@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Landing from './pages/Landing';
-import CitizenDashboard from './pages/CitizenDashboard';
+import UserDashboard from './pages/UserDashboard';
 import Registration from './pages/Registration';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import MainAdminDashboard from './pages/MainAdminDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Properties from './pages/Properties';
@@ -20,8 +20,8 @@ function App() {
         
         <Route path="/register" element={ <Registration/> } />
         
-        <Route path="/dashboard" element={ <CitizenDashboard/> } />
-        <Route path="/super" element={ <SuperAdminDashboard/> } />
+        <Route path="/dashboard" element={ <UserDashboard/> } />
+        <Route path="/super" element={ <MainAdminDashboard/> } />
         <Route path="/admin" element={ <AdminDashboard/> } />
 
         <Route path="/profile" element={ <Profile/> } />

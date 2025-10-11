@@ -3,22 +3,22 @@ import { Shield, User, CheckCircle } from "lucide-react";
 const RoleSelection = ({ selectedRole, onRoleSelect }) => {
   const roles = [
     {
-      id: 'LocalAdmin',
+      id: 'RegionalAdmin',
       value: '2',
-      name: 'Local Admin',
+      name: 'Regional Admin',
       description: 'Verify property documents and KYC. Approve land listings.',
       icon: Shield,
       color: 'blue',
       approval: 'Requires Super Admin approval'
     },
     {
-      id: 'Citizen',
+      id: 'User',
       value: '3',
-      name: 'Citizen',
+      name: 'User',
       description: 'Register and manage your properties. List properties for sale.\nBrowse and purchase properties. Send purchase requests.',
       icon: User,
       color: 'purple',
-      approval: 'Requires Local Admin verification'
+      approval: 'Requires Regional Admin verification'
     }
   ];
 

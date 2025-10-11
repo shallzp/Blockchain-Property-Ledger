@@ -24,7 +24,7 @@ const Registration = ( props ) => {
     {
       id: 'User',
       value: 'User',
-      name: 'Citizen',
+      name: 'User',
       description: 'Register properties, buy and sell land on the blockchain.',
       icon: Users,
       color: 'blue',
@@ -307,7 +307,7 @@ const Registration = ( props ) => {
                     formData.role === 'RegionalAdmin' ? 'text-purple-800' : 'text-blue-800'
                   }`}>
                     <p className="font-semibold mb-1">
-                      {formData.role === 'RegionalAdmin' ? 'Regional Admin Registration' : 'Citizen Registration'}
+                      {formData.role === 'RegionalAdmin' ? 'Regional Admin Registration' : 'User Registration'}
                     </p>
                     <p className={formData.role === 'RegionalAdmin' ? 'text-purple-700' : 'text-blue-700'}>
                       {formData.role === 'RegionalAdmin' 

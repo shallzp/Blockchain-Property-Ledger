@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Users, Shield, FileText, Eye, CheckCircle, XCircle, Pause, Play, Search, Filter, Download, Bell, Plus, History, MapPin } from 'lucide-react';
 
-const SuperAdminDashboard = () => {
+const MainAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('admins');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
@@ -45,11 +45,11 @@ const SuperAdminDashboard = () => {
   ];
 
   const allUsers = [
-    { id: 1, name: 'John Doe', wallet: '0x742d...A13f', role: 'Citizen', properties: 3, status: 'verified', joined: '2024-06-15', transactions: 12 },
-    { id: 2, name: 'Jane Smith', wallet: '0x8f3C...6A063', role: 'Citizen', properties: 2, status: 'verified', joined: '2024-07-20', transactions: 8 },
-    { id: 3, name: 'Amit Kumar', wallet: '0x1c7D...7238', role: 'Citizen', properties: 1, status: 'verified', joined: '2024-08-10', transactions: 5 },
-    { id: 4, name: 'Priya Sharma', wallet: '0x95aD...C4cE', role: 'Citizen', properties: 2, status: 'verified', joined: '2024-08-15', transactions: 7 },
-    { id: 5, name: 'Rajesh Patel', wallet: '0x6B17...1d0F', role: 'Citizen', properties: 0, status: 'pending', joined: '2024-10-05', transactions: 0 }
+    { id: 1, name: 'John Doe', wallet: '0x742d...A13f', role: 'User', properties: 3, status: 'verified', joined: '2024-06-15', transactions: 12 },
+    { id: 2, name: 'Jane Smith', wallet: '0x8f3C...6A063', role: 'User', properties: 2, status: 'verified', joined: '2024-07-20', transactions: 8 },
+    { id: 3, name: 'Amit Kumar', wallet: '0x1c7D...7238', role: 'User', properties: 1, status: 'verified', joined: '2024-08-10', transactions: 5 },
+    { id: 4, name: 'Priya Sharma', wallet: '0x95aD...C4cE', role: 'User', properties: 2, status: 'verified', joined: '2024-08-15', transactions: 7 },
+    { id: 5, name: 'Rajesh Patel', wallet: '0x6B17...1d0F', role: 'User', properties: 0, status: 'pending', joined: '2024-10-05', transactions: 0 }
   ];
 
   const handleApproveAdmin = (adminId) => {
@@ -139,7 +139,7 @@ const SuperAdminDashboard = () => {
           <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
             <Users className="w-8 h-8 text-blue-500 mb-3" />
             <h3 className="text-3xl font-bold text-gray-900">{stats.totalUsers}</h3>
-            <p className="text-sm text-gray-500 mt-1">Total Citizens</p>
+            <p className="text-sm text-gray-500 mt-1">Total Users</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition">
@@ -562,7 +562,7 @@ const SuperAdminDashboard = () => {
             {activeTab === 'users' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">All Registered Citizens</h3>
+                  <h3 className="text-lg font-bold text-gray-900">All Registered Users</h3>
                   <div className="flex gap-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -659,10 +659,10 @@ const SuperAdminDashboard = () => {
                   <div className="flex items-start gap-3">
                     <Users className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-bold text-blue-900 mb-2">Citizen Role Explanation</h4>
+                      <h4 className="font-bold text-blue-900 mb-2">User Role Explanation</h4>
                       <p className="text-sm text-blue-800">
-                        All registered users are Citizens who can both buy and sell properties. They can register their properties, 
-                        list them for sale, make purchase requests, and complete transactions. Each citizen requires KYC verification 
+                        All registered users are Users who can both buy and sell properties. They can register their properties, 
+                        list them for sale, make purchase requests, and complete transactions. Each User requires KYC verification 
                         from a Local Admin before accessing the full platform.
                       </p>
                     </div>
@@ -677,4 +677,4 @@ const SuperAdminDashboard = () => {
   );
 };
 
-export default SuperAdminDashboard;
+export default MainAdminDashboard;

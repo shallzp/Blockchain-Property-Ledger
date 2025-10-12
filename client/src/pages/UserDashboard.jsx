@@ -95,7 +95,7 @@ const UserDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       {/* Navigation */}
-      <Navbar userRole="Land Owner" walletAdd={currentAccount} />
+      <Navbar userRole="User" walletAdd={currentAccount} />
 
       {/* Hero Section */}
       <div className="relative px-8 py-12">
@@ -135,7 +135,7 @@ const UserDashboard = () => {
             </div>
 
             {/* Left Search Card */}
-            <div className="absolute left-8 bottom-8 bg-white/95 backdrop-blur-sm rounded-3xl p-6 w-96 shadow-xl">
+            <div className="absolute left-8 bottom-8 bg-white/95 backdrop-blur-sm rounded-3xl p-6 w-110 opacity-90 shadow-xl">
               <div className="flex items-center gap-2 mb-4">
                 <Calendar className="w-4 h-4 text-gray-600" />
                 <span className="text-sm text-gray-600">Find Your Property On Blockchain</span>
@@ -211,7 +211,7 @@ const UserDashboard = () => {
             </div>
 
             {/* Right Property Card - Show first property or placeholder */}
-            <div className="absolute right-8 bottom-8 bg-white/95 backdrop-blur-sm rounded-3xl p-6 w-80 shadow-xl">
+            <div className="absolute right-8 bottom-8 bg-white/95 backdrop-blur-sm rounded-3xl p-6 w-80 shadow-xl opacity-90">
               {userProperties.length > 0 ? (
                 <>
                   <div className="flex items-center gap-3 mb-4">

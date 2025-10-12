@@ -1,9 +1,17 @@
 import { useState } from 'react';
-import { Home, User, Mail, CreditCard, Loader, CheckCircle, XCircle, AlertCircle, Upload, MapPinHouse, CalendarDays, Shield, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Home, User, Mail, CreditCard, Loader, CheckCircle, XCircle, AlertCircle, Upload, MapPinHouse, CalendarDays } from 'lucide-react';
 
 import FormInput from '../components/FormInput';
+import { useWeb3 } from '../context/Web3Context';
+import { useUserRegistry } from '../hooks/useUserRegistry';
+// import { uploadToIPFSSecure } from '../utils/secureIpfsUpload'; // If you implemented secure IPFS
 
-const Registration = ( props ) => {
+const Registration = () => {
+  const navigate = useNavigate();
+  const { currentAccount, isConnected } = useWeb3();
+  const { registerUser, loading: contractLoading } = useUserRegistry();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -12,48 +20,19 @@ const Registration = ( props ) => {
     aadharNumber: "",
     resAddress: "",
     aadharFile: null,
-    aadharFileHash: "",
-    role: "" // "User" or "RegionalAdmin"
+    aadharFileHash: ""
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  const roles = [
-    {
-      id: 'User',
-      value: 'User',
-      name: 'User',
-      description: 'Register properties, buy and sell land on the blockchain.',
-      icon: Users,
-      color: 'blue',
-      approval: 'Requires Regional Admin verification'
-    },
-    {
-      id: 'RegionalAdmin',
-      value: 'RegionalAdmin',
-      name: 'Regional Admin',
-      description: 'Verify citizens KYC and approve property registrations in your region.',
-      icon: Shield,
-      color: 'purple',
-      approval: 'Requires Main Administrator approval'
-    }
-  ];
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: files ? files[0] : value,
-    }));
-    setError("");
-  };
-
-  const handleRoleSelect = (roleValue) => {
-    setFormData(prev => ({
-      ...prev,
-      role: roleValue
     }));
     setError("");
   };
@@ -83,71 +62,63 @@ const Registration = ( props ) => {
       setError('Valid Aadhaar number (12 digits) is required');
       return false;
     }
-    if (!formData.aadharFile){
+    if (!formData.aadharFile) {
       setError("Aadhaar PDF upload is required");
-      return false;
-    }
-    if (!formData.role) {
-      setError('Please select a role');
       return false;
     }
     return true;
   };
 
+  // Simple IPFS upload (replace with your secure implementation)
   const uploadToIPFS = async (file) => {
-    // TODO: Implement actual IPFS upload
     console.log('Uploading file to IPFS:', file.name);
+    // TODO: Replace with actual IPFS upload (Pinata, Web3.Storage, etc.)
     await new Promise(resolve => setTimeout(resolve, 1500));
     return `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     if (!validateForm()) {
+      return;
+    }
+
+    if (!isConnected || !currentAccount) {
+      setError('Please connect your wallet first');
       return;
     }
 
     setIsSubmitting(true);
     setError('');
+    setUploadProgress(0);
 
     try {
-      if (!window.ethereum) {
-        throw new Error('MetaMask is not installed');
-      }
-
       // Step 1: Upload Aadhaar file to IPFS
       console.log('Uploading Aadhaar to IPFS...');
+      setUploadProgress(25);
+      
       const ipfsHash = await uploadToIPFS(formData.aadharFile);
+      // If using secure upload: const ipfsHash = await uploadToIPFSSecure(formData.aadharFile);
+      
       console.log('IPFS Hash:', ipfsHash);
+      setUploadProgress(50);
 
-      // Step 2: Call smart contract registerUser function
+      // Step 2: Register user on blockchain
       console.log('Registering user on blockchain...');
       
-      /* TODO: Replace with actual contract call
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-      
-      const tx = await contract.registerUser(
-        formData.firstName,
-        formData.lastName,
-        formData.dateOfBirth,
-        formData.aadharNumber,
-        formData.resAddress,
-        formData.email,
-        ipfsHash
-      );
-      
-      await tx.wait();
-      
-      // If Regional Admin, need Main Admin to approve
-      // The role will be set to User by default in contract
-      // Main Admin will use addRegionalAdmin(address) to promote
-      
-      console.log('Transaction hash:', tx.hash);
-      */
+      const tx = await registerUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        aadharNumber: formData.aadharNumber,
+        resAddress: formData.resAddress,
+        email: formData.email,
+        aadharFileHash: ipfsHash
+      });
 
-      // Simulate contract call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      setUploadProgress(100);
+      console.log('Transaction:', tx);
 
       console.log('User registered with data:', {
         firstName: formData.firstName,
@@ -157,27 +128,22 @@ const Registration = ( props ) => {
         resAddress: formData.resAddress,
         email: formData.email,
         aadharFileHash: ipfsHash,
-        walletAddress: props.walletAddress,
-        requestedRole: formData.role,
-        contractRole: 'User', // Contract always registers as User first
-        verified: false
+        walletAddress: currentAccount,
+        role: 'User', // Always registered as User
+        verified: false // Requires Regional Admin verification
       });
 
       setSuccess(true);
       
+      // Redirect to pending verification page
       setTimeout(() => {
-        if (props.onRegistrationComplete) {
-          props.onRegistrationComplete({
-            role: formData.role,
-            name: `${formData.firstName} ${formData.lastName}`,
-            status: 'pending'
-          });
-        }
+        navigate('/pending-verification');
       }, 3000);
 
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || 'Registration failed. Please try again.');
+      setUploadProgress(0);
     } finally {
       setIsSubmitting(false);
     }
@@ -200,20 +166,17 @@ const Registration = ( props ) => {
               <div className="text-left">
                 <p className="font-semibold text-orange-800 mb-2">Pending Verification</p>
                 <p className="text-sm text-orange-700">
-                  {formData.role === 'RegionalAdmin' 
-                    ? 'Your Regional Admin registration requires Main Administrator approval. You will be notified once approved.'
-                    : 'Your account requires verification from a Regional Admin to access all features.'
-                  }
+                  Your account requires verification from a Regional Admin before you can access all features.
                 </p>
                 <p className="text-sm text-orange-600 mt-2">
-                  You will receive access once verified. Please check back later.
+                  You will receive access once verified. This usually takes 24-48 hours.
                 </p>
               </div>
             </div>
           </div>
           <div className="flex items-center justify-center gap-2 text-gray-500">
             <Loader className="w-5 h-5 animate-spin" />
-            <span>Redirecting to dashboard...</span>
+            <span>Redirecting...</span>
           </div>
         </div>
       </div>
@@ -222,227 +185,237 @@ const Registration = ( props ) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-8">
-      <div className="max-w-6xl mx-auto mb-8">
+      <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Home className="w-8 h-8 text-orange-500" />
-          <span className="text-2xl font-bold text-gray-800">LandChain</span>
+          <span className="text-2xl font-bold text-gray-800">PropChain</span>
         </div>
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to LandChain</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to PropChain</h1>
               <p className="text-gray-600">Complete your registration to get started</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 mb-1">Connected Wallet</p>
               <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-mono text-sm">{props.walletAddress}</span>
+                <span className="font-mono text-sm">
+                  {currentAccount ? `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}` : 'Not Connected'}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Role Selection */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Select Your Role</h2>
-            <div className="space-y-4">
-              {roles.map((role) => {
-                const Icon = role.icon;
-                const isSelected = formData.role === role.value;
-                
-                return (
-                  <div
-                    key={role.id}
-                    onClick={() => handleRoleSelect(role.value)}
-                    className={`bg-white rounded-2xl p-6 border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-orange-500 shadow-lg shadow-orange-500/20'
-                        : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-orange-500' : 'bg-gray-100'
-                      }`}>
-                        <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-gray-600'}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{role.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{role.description}</p>
-                        <div className="flex items-center gap-2">
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            isSelected ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {role.approval}
-                          </div>
-                        </div>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        isSelected ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
-                      }`}>
-                        {isSelected && <CheckCircle className="w-5 h-5 text-white" />}
-                      </div>
-                    </div>
+      <div className="max-w-4xl mx-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            {/* Info Box */}
+            <div className="mb-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-blue-900 mb-2">Citizen Registration</p>
+                  <p className="text-sm text-blue-700 mb-2">
+                    You are registering as a <strong>Citizen (User)</strong> on the PropChain platform.
+                  </p>
+                  <div className="text-sm text-blue-700 space-y-1">
+                    <p>✓ Register and manage your properties</p>
+                    <p>✓ List properties for sale on the marketplace</p>
+                    <p>✓ Browse and purchase properties</p>
+                    <p>✓ Send and receive purchase requests</p>
                   </div>
-                );
-              })}
+                  <p className="text-xs text-blue-600 mt-3">
+                    <strong>Note:</strong> Your account will require verification from a Regional Admin before you can access all features.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Role Info Box */}
-            {formData.role && (
-              <div className={`mt-6 rounded-xl p-4 border ${
-                formData.role === 'RegionalAdmin' 
-                  ? 'bg-purple-50 border-purple-200' 
-                  : 'bg-blue-50 border-blue-200'
-              }`}>
-                <div className="flex items-start gap-3">
-                  <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                    formData.role === 'RegionalAdmin' ? 'text-purple-500' : 'text-blue-500'
-                  }`} />
-                  <div className={`text-sm ${
-                    formData.role === 'RegionalAdmin' ? 'text-purple-800' : 'text-blue-800'
-                  }`}>
-                    <p className="font-semibold mb-1">
-                      {formData.role === 'RegionalAdmin' ? 'Regional Admin Registration' : 'User Registration'}
-                    </p>
-                    <p className={formData.role === 'RegionalAdmin' ? 'text-purple-700' : 'text-blue-700'}>
-                      {formData.role === 'RegionalAdmin' 
-                        ? 'After registration, the Main Administrator will review your application. Once approved, you can verify citizens and properties in your region.'
-                        : 'After registration, a Regional Admin will verify your KYC documents. Once verified, you can register properties, buy and sell land on the blockchain.'
-                      }
-                    </p>
-                  </div>
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-800 font-medium">Registration Error</p>
+                  <p className="text-red-600 text-sm mt-1">{error}</p>
                 </div>
               </div>
             )}
-          </div>
 
-          <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Details</h2>
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              {error && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-red-800 font-medium">Registration Error</p>
-                    <p className="text-red-600 text-sm mt-1">{error}</p>
-                  </div>
-                </div>
-              )}
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <FormInput 
-                  label="First Name" 
-                  Icon={User} 
-                  type="text" 
-                  name="firstName" 
-                  value={formData.firstName} 
-                  onChange={handleInputChange} 
-                  placeholder="Enter your first name" 
-                  required={true}
-                />
-               
-                <FormInput 
-                  label="Last Name" 
-                  Icon={User} 
-                  type="text" 
-                  name="lastName" 
-                  value={formData.lastName} 
-                  onChange={handleInputChange} 
-                  placeholder="Enter your last name" 
-                  required={true}
-                />
-              </div>
-
+            <div className="grid md:grid-cols-2 gap-6">
               <FormInput 
-                label="Date of Birth" 
-                Icon={CalendarDays} 
-                type="date" 
-                name="dateOfBirth" 
-                value={formData.dateOfBirth} 
-                onChange={handleInputChange} 
-                required={true}
-              />
-
-              <FormInput 
-                label="Email Address" 
-                Icon={Mail} 
-                type="email" 
-                name="email"
-                value={formData.email} 
-                onChange={handleInputChange} 
-                placeholder="your.email@example.com" 
-                required={true}
-              />
-
-              <FormInput 
-                label="Residential Address" 
-                Icon={MapPinHouse} 
+                label="First Name" 
+                Icon={User} 
                 type="text" 
-                name="resAddress" 
-                value={formData.resAddress} 
+                name="firstName" 
+                value={formData.firstName} 
                 onChange={handleInputChange} 
-                placeholder="Enter your complete residential address" 
+                placeholder="Enter your first name" 
                 required={true}
               />
-
+             
               <FormInput 
-                label="Aadhaar Number" 
-                Icon={CreditCard} 
+                label="Last Name" 
+                Icon={User} 
                 type="text" 
-                name="aadharNumber" 
-                value={formData.aadharNumber} 
+                name="lastName" 
+                value={formData.lastName} 
                 onChange={handleInputChange} 
-                placeholder="123456789012 (12 digits)" 
-                maxLength="12"
+                placeholder="Enter your last name" 
                 required={true}
               />
+            </div>
 
-              <FormInput 
-                label="Upload Aadhaar Card (PDF Format)" 
-                Icon={Upload} 
-                type="file" 
-                name="aadharFile" 
-                onChange={handleInputChange} 
-                accept=".pdf" 
-                required={true}
-              />
+            <FormInput 
+              label="Date of Birth" 
+              Icon={CalendarDays} 
+              type="date" 
+              name="dateOfBirth" 
+              value={formData.dateOfBirth} 
+              onChange={handleInputChange} 
+              required={true}
+            />
 
-              <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-gray-700">
-                    <p className="font-semibold mb-1">Privacy & Security</p>
-                    <p className="text-gray-600">
-                      Your Aadhaar document will be uploaded to IPFS (decentralized storage) and only the hash will be stored on the blockchain. 
-                      Admins can verify your documents securely.
-                    </p>
-                  </div>
+            <FormInput 
+              label="Email Address" 
+              Icon={Mail} 
+              type="email" 
+              name="email"
+              value={formData.email} 
+              onChange={handleInputChange} 
+              placeholder="your.email@example.com" 
+              required={true}
+            />
+
+            <FormInput 
+              label="Residential Address" 
+              Icon={MapPinHouse} 
+              type="text" 
+              name="resAddress" 
+              value={formData.resAddress} 
+              onChange={handleInputChange} 
+              placeholder="Enter your complete residential address" 
+              required={true}
+            />
+
+            <FormInput 
+              label="Aadhaar Number" 
+              Icon={CreditCard} 
+              type="text" 
+              name="aadharNumber" 
+              value={formData.aadharNumber} 
+              onChange={handleInputChange} 
+              placeholder="123456789012 (12 digits)" 
+              maxLength="12"
+              required={true}
+            />
+
+            <FormInput 
+              label="Upload Aadhaar Card (PDF Format)" 
+              Icon={Upload} 
+              type="file" 
+              name="aadharFile" 
+              onChange={handleInputChange} 
+              accept=".pdf" 
+              required={true}
+            />
+
+            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-gray-700">
+                  <p className="font-semibold mb-1">Privacy & Security</p>
+                  <p className="text-gray-600">
+                    Your Aadhaar document will be uploaded to IPFS (decentralized storage) and only the hash will be stored on the blockchain. 
+                    Only authorized Regional Admins can verify your documents securely.
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting || !formData.role}
-                className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-                  isSubmitting || !formData.role
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-orange-400 to-orange-500 text-white hover:shadow-lg hover:shadow-orange-500/30'
-                }`}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting || contractLoading || !isConnected}
+              className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
+                isSubmitting || contractLoading || !isConnected
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-orange-400 to-orange-500 text-white hover:shadow-lg hover:shadow-orange-500/30'
+              }`}
+            >
+              {isSubmitting || contractLoading ? (
+                <div>
+                  <span className="flex items-center justify-center gap-2 mb-2">
                     <Loader className="w-5 h-5 animate-spin" />
-                    Registering on Blockchain...
+                    {uploadProgress < 50 ? 'Uploading to IPFS...' : 'Registering on Blockchain...'}
                   </span>
-                ) : (
-                  'Complete Registration'
-                )}
-              </button>
+                  {uploadProgress > 0 && (
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              ) : !isConnected ? (
+                'Please Connect Wallet'
+              ) : (
+                'Complete Registration'
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* What Happens Next */}
+        <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens Next?</h3>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-orange-600 font-bold">1</span>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Blockchain Registration</p>
+                <p className="text-sm text-gray-600">Your details are permanently recorded on the blockchain as a User (Citizen)</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-orange-600 font-bold">2</span>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">KYC Verification</p>
+                <p className="text-sm text-gray-600">A Regional Admin will verify your Aadhaar documents (usually takes 24-48 hours)</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-orange-600 font-bold">3</span>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Account Activated</p>
+                <p className="text-sm text-gray-600">Once verified, you can register properties, list them for sale, and purchase other properties</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Admin Note */}
+        <div className="mt-6 bg-purple-50 rounded-xl p-6 border border-purple-200">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-purple-900 mb-1">Want to become a Regional Admin?</p>
+              <p className="text-purple-700">
+                Regional Admin roles are assigned by the Main Administrator. After successful registration and verification, 
+                you can contact the system administrator to request Regional Admin privileges.
+              </p>
             </div>
           </div>
         </div>

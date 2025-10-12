@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import UserDashboard from './pages/UserDashboard';
 import Registration from './pages/Registration';
+import PendingVerification from './pages/PendingVerification';
 import MainAdminDashboard from './pages/MainAdminDashboard';
+import ManageAdmin from './pages/ManageAdmin';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Properties from './pages/Properties';
@@ -11,6 +13,7 @@ import AddProperty from './pages/AddProperty';
 import Requests from './pages/Requests';
 import Requested from './pages/Requested';
 import Explore from './pages/Explore';
+import { Monitor } from 'lucide-react';
 
 function App() {
   
@@ -20,17 +23,21 @@ function App() {
         <Route path="/" element={ <Landing/> } />
         
         <Route path="/register" element={ <Registration/> } />
+        <Route path="/pending" element={ <PendingVerification/> } />
         
-        <Route path="/dashboard" element={ <UserDashboard/> } />
-        <Route path="/super" element={ <MainAdminDashboard/> } />
-        <Route path="/admin" element={ <AdminDashboard/> } />
+        <Route path="/user/dashboard" element={ <UserDashboard/> } />
+        <Route path="/main/dashboard" element={ <MainAdminDashboard/> } />
+        <Route path="/admin/dashboard" element={ <AdminDashboard/> } />
 
-        <Route path="/profile" element={ <Profile/> } />
-        <Route path="/properties" element={ <Properties/> } />
-        <Route path="/add-property" element={ <AddProperty/> } />
-        <Route path="/requests" element={ <Requests/> }/>
-        <Route path="/requested" element={ <Requested/> }/>
-        <Route path="/explore" element={ <Explore/> }/>
+        <Route path="/user/profile" element={ <Profile/> } />
+        <Route path="/user/properties" element={ <Properties/> } />
+        <Route path="/user/add-property" element={ <AddProperty/> } />
+        <Route path="/user/requests" element={ <Requests/> }/>
+        <Route path="/user/requested" element={ <Requested/> }/>
+        <Route path="/user/explore" element={ <Explore/> }/>
+
+        <Route path="/main/manage-admin" element={ <ManageAdmin/> } />
+        <Route path="/main/monitor" element={ <Monitor/> } />
         
       </Routes>
     </BrowserRouter>
@@ -80,7 +87,7 @@ export default App
 
 //           if (!registered) {
 //             // Show registration form
-//             navigate('/registration');
+//             navigate('/register');
 //             return;
 //           }
 
@@ -140,11 +147,11 @@ export default App
 //         } else {
 //           // Redirect to appropriate dashboard
 //           if (userRole === 'Main Administrator') {
-//             navigate('/super-admin');
+//             navigate('/main/dashboard');
 //           } else if (userRole === 'Regional Admin') {
-//             navigate('/admin-dashboard');
+//             navigate('/admin/dashboard');
 //           } else {
-//             navigate('/dashboard');
+//             navigate('/user/dashboard');
 //           }
 //         }
 //       } catch (error) {
@@ -176,12 +183,12 @@ export default App
 //     <Routes>
 //       {/* Public Routes */}
 //       <Route path="/" element={<Landing />} />
-//       <Route path="/registration" element={<Registration />} />
+//       <Route path="/register" element={<Registration />} />
 //       <Route path="/pending-verification" element={<PendingVerification />} />
 
 //       {/* Protected Routes - Super Admin Only */}
 //       <Route
-//         path="/super-admin"
+//         path="/main/dashboard"
 //         element={
 //           <ProtectedRoute>
 //             <RoleRoute allowedRoles={['Main Administrator']}>

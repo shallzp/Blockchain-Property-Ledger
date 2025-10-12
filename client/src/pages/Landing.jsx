@@ -17,7 +17,7 @@ const Landing = () => {
   // Redirect to dashboard if wallet is connected
   useEffect(() => {
     if (isConnected) {
-      navigate("/dashboard");
+      navigate("/user/dashboard");
     }
   }, [isConnected, navigate]);
 
@@ -78,34 +78,8 @@ const Landing = () => {
               <p className="text-xl text-gray-200 mb-12 max-w-2xl leading-relaxed">
                 PropChain is a decentralized network for transparent, secure, and immutable property registration on the Ethereum blockchain. Revolutionizing real estate with trustless ownership verification and instant transfer capabilities.
               </p>
-
-              {/* Call to Action Buttons */}
-              <div className="flex space-x-4">
-                <button 
-                  onClick={() => navigate('/explore')}
-                  className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition shadow-xl text-lg"
-                >
-                  Explore Properties
-                </button>
-                <button 
-                  onClick={() => navigate('/registration')}
-                  className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition backdrop-blur-sm border border-white/20 text-lg"
-                >
-                  Register Land
-                </button>
-              </div>
             </div>
           </div>
-        </div>
-
-        {/* Decorative Zigzag Border */}
-        <div className="absolute bottom-0 left-0 right-0 z-30 overflow-hidden">
-          <svg className="w-full h-24" viewBox="0 0 1200 100" preserveAspectRatio="none">
-            <path 
-              d="M0,0 L50,50 L100,0 L150,50 L200,0 L250,50 L300,0 L350,50 L400,0 L450,50 L500,0 L550,50 L600,0 L650,50 L700,0 L750,50 L800,0 L850,50 L900,0 L950,50 L1000,0 L1050,50 L1100,0 L1150,50 L1200,0 L1200,100 L0,100 Z" 
-              fill="white" 
-            />
-          </svg>
         </div>
 
         {/* Statistics Panel */}

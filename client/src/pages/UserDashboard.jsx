@@ -29,6 +29,15 @@ const UserDashboard = () => {
 
   const navigate = useNavigate();
 
+  const navItems = [
+    { to: '/user/dashboard', label: 'Home', icon: Home },
+    { to: '/user/profile', label: 'Profile', icon: User },
+    { to: '/user/properties', label: 'Properties', icon: FileText },
+    { to: '/user/requests', label: 'Requests', icon: Eye },
+    { to: '/user/requested', label: 'Requested', icon: Send },
+    { to: '/user/explore', label: 'Explore', icon: Search }
+  ];
+
   // Redirect to landing if not connected
   useEffect(() => {
     if (!web3Loading && !isConnected) {
@@ -95,7 +104,7 @@ const UserDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       {/* Navigation */}
-      <Navbar userRole="User" walletAdd={currentAccount} />
+      <Navbar userRole="User" walletAdd={currentAccount} navItems={navItems} />
 
       {/* Hero Section */}
       <div className="relative px-8 py-12">

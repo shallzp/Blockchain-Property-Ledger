@@ -3,13 +3,16 @@ import { Home, Search, User, FileText, Send, Eye, LogOut, ChevronDown } from 'lu
 import { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 
-const Navbar = ({ userRole, walletAdd }) => {
+const Navbar = ({ userRole, walletAdd, navItems }) => {
   const navigate = useNavigate();
   const { disconnectWallet, balance, chainName } = useWeb3();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const baseStyle = "px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2 rounded-lg hover:bg-orange-50";
   const activeStyle = "px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm flex items-center gap-2";
+
+  // Use navigation items passed via props
+  const navigationItems = navItems || [];
 
   const handleDisconnect = () => {
     disconnectWallet();
@@ -25,54 +28,25 @@ const Navbar = ({ userRole, walletAdd }) => {
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
       {/* Logo Section */}
-      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/user/dashboard')}>
         <img src="./Logo.png" alt="PropChain Logo" className="w-8 h-8" />
         <span className="text-xl font-bold text-gray-800">PropChain</span>
       </div>
       
       {/* Navigation Links */}
       <div className="flex items-center gap-2">
-        <NavLink 
-          to="/dashboard" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <Home className="w-4 h-4" /> Home
-        </NavLink>
-
-        <NavLink 
-          to="/profile" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <User className="w-4 h-4" /> Profile
-        </NavLink>
-
-        <NavLink 
-          to="/properties" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <FileText className="w-4 h-4" /> Properties
-        </NavLink>
-
-        <NavLink 
-          to="/requests" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <Eye className="w-4 h-4" /> Requests
-        </NavLink>
-
-        <NavLink 
-          to="/requested" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <Send className="w-4 h-4" /> Requested
-        </NavLink>
-
-        <NavLink 
-          to="/explore" 
-          className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
-        >
-          <Search className="w-4 h-4" /> Explore
-        </NavLink>
+        {navigationItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <NavLink 
+              key={item.to}
+              to={item.to} 
+              className={({ isActive }) => (isActive ? activeStyle : baseStyle)}
+            >
+              <IconComponent className="w-4 h-4" /> {item.label}
+            </NavLink>
+          );
+        })}
       </div>
     
       {/* Right Section - User Info */}

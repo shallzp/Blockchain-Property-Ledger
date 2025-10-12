@@ -49,7 +49,7 @@ const Profile = () => {
 
           if (!isReg) {
             // Redirect to registration if not registered
-            navigate('/registration');
+            navigate('/register');
             return;
           }
 
@@ -149,7 +149,7 @@ const Profile = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
           <p className="text-gray-600 mb-6">You need to register first</p>
           <button
-            onClick={() => navigate('/registration')}
+            onClick={() => navigate('/register')}
             className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
           >
             Go to Registration
@@ -246,7 +246,7 @@ const Profile = () => {
 
               {/* Back to Dashboard Button */}
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/user/dashboard')}
                 className="w-full mt-4 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition"
               >
                 Back to Dashboard

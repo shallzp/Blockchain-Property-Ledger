@@ -8,6 +8,16 @@ import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 
 const Explore = () => {
   const navigate = useNavigate();
+
+  const navItems = [
+    { to: '/user/dashboard', label: 'Home', icon: Home },
+    { to: '/user/profile', label: 'Profile', icon: User },
+    { to: '/user/properties', label: 'Properties', icon: FileText },
+    { to: '/user/requests', label: 'Requests', icon: Eye },
+    { to: '/user/requested', label: 'Requested', icon: Send },
+    { to: '/user/explore', label: 'Explore', icon: Search }
+  ];
+  
   const location = useLocation();
   const passedFilters = location.state?.filters;
 
@@ -201,7 +211,7 @@ const Explore = () => {
   if (web3Loading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-        <Navbar userRole="User" walletAdd={currentAccount} />
+        <Navbar userRole="User" walletAdd={currentAccount} navItems={navItems} />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>

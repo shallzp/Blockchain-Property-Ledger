@@ -46,26 +46,55 @@ contract UserRegistry {
     }
 
     // First wallet becomes system deployer
-    constructor() {
+    constructor(
+        string memory _firstName,
+        string memory _lastName,
+        string memory _dateOfBirth,
+        string memory _aadharNumber,
+        string memory _resAddress,
+        string memory _email,
+        string memory _aadharFileHash
+    ) {
         mainAdministrator = msg.sender;
         users[msg.sender] = User({
             userID: msg.sender,
-            firstName: "Main",
-            lastName: "Administrator",
-            dateOfBirth: "",
-            aadharNumber: "N/A",
-            resAddress: "N/A",
-            email: "",
-            aadharFileHash: "",
+            firstName: _firstName,
+            lastName: _lastName,
+            dateOfBirth: _dateOfBirth,
+            aadharNumber: _aadharNumber,
+            resAddress: _resAddress,
+            email: _email,
+            aadharFileHash: _aadharFileHash,
             role: Role.MainAdministrator,
             verified: true,
             accountCreatedDateTime: block.timestamp,
             totalIndices: 0,  
-            requestIndices: 0 
+            requestIndices: 0   
         });
         registeredUsers[msg.sender] = true;
         emit UserRegistered(msg.sender, Role.MainAdministrator, block.timestamp);
     }
+
+    function updateMainAdminProfile(
+        string memory _firstName,
+        string memory _lastName,
+        string memory _dateOfBirth,
+        string memory _aadharNumber,
+        string memory _resAddress,
+        string memory _email,
+        string memory _aadharFileHash
+    ) public onlyMainAdministrator {
+        User storage admin = users[mainAdministrator];
+        admin.firstName = _firstName;
+        admin.lastName = _lastName;
+        admin.dateOfBirth = _dateOfBirth;
+        admin.aadharNumber = _aadharNumber;
+        admin.resAddress = _resAddress;
+        admin.email = _email;
+        admin.aadharFileHash = _aadharFileHash;
+        // Optionally emit an event here
+    }
+
 
     // Register New User
     function registerUser(

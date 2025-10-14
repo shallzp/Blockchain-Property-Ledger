@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, UserPlus, Trash2, CheckCircle, XCircle, Loader, AlertCircle } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Loader, XCircle, CheckCircle, AlertCircle } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useWeb3 } from '../context/Web3Context';
@@ -8,73 +8,95 @@ import { useUserRegistry } from '../hooks/useUserRegistry';
 
 const ManageAdmin = () => {
   const navigate = useNavigate();
-  const { isConnected, currentAccount, loading: web3Loading, disconnectWallet } = useWeb3();
-  const { 
-    getAllRegionalAdmins, 
-    getPendingRegionalAdminRequests, 
-    promoteToRegionalAdmin, 
+  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
+  const {
+    getAllRegionalAdmins,
+    promoteToRegionalAdmin,
     removeRegionalAdmin,
-    loading: contractLoading
+    getUserDetails,
+    updateAdminRevenueDept,
+    getAdminCountByRevenueDept,
+    loading: contractLoading,
   } = useUserRegistry();
 
   const [regionalAdmins, setRegionalAdmins] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingUser, setProcessingUser] = useState(null);
-  const [processingAction, setProcessingAction] = useState(''); // 'promote' or 'remove' 
+  const [processingAction, setProcessingAction] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newAdminAddress, setNewAdminAddress] = useState('');
+  const [newRevenueDept, setNewRevenueDept] = useState('');
+  const [revenueDeptId, setRevenueDeptId] = useState('');
+  const [employeesCount, setEmployeesCount] = useState(null);
 
-  // Redirect if not Main Admin
-//   useEffect(() => {
-//     const checkAuth = async () => {
-//       if (!isConnected) {
-//         navigate('/');
-//         return;
-//       }
-//       try {
-//         const userDetails = await getUserRegistryUserDetails(currentAccount);
-//         if (userDetails.role !== 'Main Administrator') {
-//           navigate('/user/dashboard');
-//         }
-//       } catch (error) {
-//         console.error('Authorization check failed', error);
-//         navigate('/');
-//       }
-//     };
-//     if (!web3Loading) checkAuth();
-//   }, [isConnected, currentAccount, web3Loading, navigate]);
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!isConnected) {
+        navigate('/');
+        return;
+      }
+      try {
+        const userDetails = await getUserDetails(currentAccount);
+        if (!userDetails || userDetails.role !== 'Main Administrator') {
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Authorization check failed', error);
+        navigate('/');
+      }
+    };
+    if (!web3Loading) checkAuth();
+  }, [isConnected, currentAccount, web3Loading, navigate, getUserDetails]);
 
-  // Fetch regional admins and pending requests
   useEffect(() => {
     const fetchAdmins = async () => {
       if (isConnected) {
         setLoading(true);
         try {
           const admins = await getAllRegionalAdmins();
-          const requests = await getPendingRegionalAdminRequests();
           setRegionalAdmins(admins);
-          setPendingRequests(requests);
         } catch (error) {
-          console.error('Failed fetching admins or requests:', error);
+          console.error('Failed fetching admins:', error);
         } finally {
           setLoading(false);
         }
       }
     };
     fetchAdmins();
-  }, [isConnected]);
+  }, [isConnected, getAllRegionalAdmins]);
 
-  // Handle promotion
-  const handlePromote = async (walletAddress) => {
-    setProcessingUser(walletAddress);
+  // Fetch number of employees in a revenue dept
+  const fetchEmployeesInDept = async () => {
+    if (!revenueDeptId) {
+      alert('Please enter a Revenue Department ID');
+      return;
+    }
+    try {
+      const count = await getAdminCountByRevenueDept(revenueDeptId);
+      setEmployeesCount(count);
+    } catch (error) {
+      console.error('Failed to fetch employee count:', error);
+      alert('Failed to get employee count: ' + error.message);
+    }
+  };
+
+
+  const handleAddAdmin = async (event) => {
+    event.preventDefault();
+    if (!newAdminAddress || !newRevenueDept) {
+      alert('Please enter all details');
+      return;
+    }
+    setProcessingUser(newAdminAddress);
     setProcessingAction('promote');
     try {
-      await promoteToRegionalAdmin(walletAddress);
-      alert(`User ${walletAddress} promoted to Regional Admin`);
-      // Refresh lists
+      await promoteToRegionalAdmin(newAdminAddress, newRevenueDept);
+      alert(`User ${newAdminAddress} promoted to Regional Admin with Revenue Dept ${newRevenueDept}`);
+      setNewAdminAddress('');
+      setNewRevenueDept('');
+      setShowAddModal(false);
       const admins = await getAllRegionalAdmins();
-      const requests = await getPendingRegionalAdminRequests();
       setRegionalAdmins(admins);
-      setPendingRequests(requests);
     } catch (error) {
       console.error('Promotion failed:', error);
       alert('Failed to promote: ' + error.message);
@@ -83,14 +105,12 @@ const ManageAdmin = () => {
     setProcessingAction('');
   };
 
-  // Handle removal
   const handleRemove = async (walletAddress) => {
     setProcessingUser(walletAddress);
     setProcessingAction('remove');
     try {
       await removeRegionalAdmin(walletAddress);
       alert(`Regional Admin ${walletAddress} removed`);
-      // Refresh admins list
       const admins = await getAllRegionalAdmins();
       setRegionalAdmins(admins);
     } catch (error) {
@@ -101,10 +121,20 @@ const ManageAdmin = () => {
     setProcessingAction('');
   };
 
-  // Disconnect handler
-  const handleDisconnect = () => {
-    disconnectWallet();
-    navigate('/');
+  const handleUpdateRevenueDept = async (walletAddress, newDeptId) => {
+    if (!newDeptId) {
+      alert('Please provide a valid Revenue Dept ID');
+      return;
+    }
+    try {
+      await updateAdminRevenueDept(walletAddress, newDeptId);
+      alert(`Updated Revenue Dept for admin ${walletAddress} to ${newDeptId}`);
+      const admins = await getAllRegionalAdmins();
+      setRegionalAdmins(admins);
+    } catch (error) {
+      console.error('Update failed:', error);
+      alert('Failed to update Revenue Dept: ' + error.message);
+    }
   };
 
   if (web3Loading || loading || contractLoading) {
@@ -129,59 +159,31 @@ const ManageAdmin = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <h1 className="text-3xl font-bold text-gray-900">Manage Regional Admins</h1>
-          <button onClick={handleDisconnect} className="text-red-600 hover:text-red-700 flex items-center gap-2 font-semibold">
-            <XCircle className="w-5 h-5" /> Disconnect
+          <button onClick={() => setShowAddModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium">
+            <UserPlus className="w-5 h-5" /> Add Regional Admin
           </button>
         </div>
 
-        {/* Pending Requests */}
+        {/* View number of employees by Revenue Dept */}
         <section className="mb-16">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
-            <UserPlus className="w-6 h-6 text-blue-600" /> Pending Regional Admin Requests ({pendingRequests.length})
-          </h2>
-
-          {pendingRequests.length === 0 ? (
-            <p className="text-gray-500">No pending requests at the moment.</p>
-          ) : (
-            <div className="grid gap-6">
-              {pendingRequests.map((req) => (
-                <div key={req.walletAddress} className="bg-white rounded-2xl p-6 flex items-center justify-between shadow-lg border border-gray-100">
-                  <div>
-                    <p className="text-sm text-gray-700 mb-1">Wallet Address:</p>
-                    <p className="font-mono text-gray-900">{req.walletAddress}</p>
-                    <p className="text-sm text-gray-600 mt-2">Requested Role: Regional Admin</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      disabled={processingUser === req.walletAddress && processingAction === 'promote'}
-                      onClick={() => handlePromote(req.walletAddress)}
-                      className="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"
-                    >
-                      {processingUser === req.walletAddress && processingAction === 'promote' ? (
-                        <Loader className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <CheckCircle className="w-4 h-4" /> Approve
-                        </>
-                      )}
-                    </button>
-                    <button
-                      disabled={processingUser === req.walletAddress && processingAction === 'remove'}
-                      onClick={() => handleRemove(req.walletAddress)}
-                      className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-medium"
-                    >
-                      {processingUser === req.walletAddress && processingAction === 'remove' ? (
-                        <Loader className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <XCircle className="w-4 h-4" /> Reject
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">View Employees by Revenue Department</h2>
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Enter Revenue Dept ID"
+              value={revenueDeptId}
+              onChange={(e) => setRevenueDeptId(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+            <button
+              onClick={fetchEmployeesInDept}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2"
+            >
+              Get Count
+            </button>
+          </div>
+          {employeesCount !== null && (
+            <p className="mt-4 text-gray-700">Number of employees in dept {revenueDeptId}: {employeesCount}</p>
           )}
         </section>
 
@@ -211,6 +213,12 @@ const ManageAdmin = () => {
                           <AlertCircle className="w-4 h-4" /> Pending Verification
                         </p>
                       )}
+                      <input
+                        type="text"
+                        placeholder="Update Revenue Dept ID"
+                        className="border rounded px-2 py-1 mt-2"
+                        onBlur={(e) => handleUpdateRevenueDept(admin.walletAddress, e.target.value)}
+                      />
                     </div>
                   </div>
                   <button
@@ -232,6 +240,47 @@ const ManageAdmin = () => {
           )}
         </section>
       </div>
+
+      {/* Add Admin Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+              aria-label="Close"
+            >
+              <XCircle className="w-6 h-6" />
+            </button>
+            <h3 className="text-lg font-semibold mb-4">Add New Regional Admin</h3>
+            <form onSubmit={handleAddAdmin} className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Wallet Address"
+                value={newAdminAddress}
+                onChange={(e) => setNewAdminAddress(e.target.value)}
+                required
+                className="border rounded px-3 py-2"
+              />
+              <input
+                type="text"
+                placeholder="Revenue Department ID"
+                value={newRevenueDept}
+                onChange={(e) => setNewRevenueDept(e.target.value)}
+                required
+                className="border rounded px-3 py-2"
+              />
+              <button
+                type="submit"
+                disabled={processingUser !== null}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2"
+              >
+                {processingUser ? <Loader className="w-5 h-5 animate-spin mx-auto" /> : 'Promote to Regional Admin'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

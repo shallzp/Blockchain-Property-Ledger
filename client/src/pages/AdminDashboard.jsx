@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import { Home, Users, FileText, CheckCircle, XCircle, Search, Filter, Upload, MapPin, Calendar, Eye, TrendingUp, AlertCircle, Clock, Building2, FileCheck } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Home, Clock, FileCheck, TrendingUp, CheckCircle, XCircle, Eye, Building2 } from 'lucide-react';
+
+import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const navigate = useNavigate();
+  const navItems = useNavItems();
+
+  // const [activeTab, setActiveTab] = useState('overview'); // (If you implement tabbing logic later)
+  // const [showRegisterModal, setShowRegisterModal] = useState(false); // Placeholder for possible modal logic
 
   const adminRegion = 'Mumbai';
-  
   const stats = {
     region: adminRegion,
     totalUsers: 234,
@@ -35,14 +40,17 @@ const AdminDashboard = () => {
 
   const handleApproveKYC = (userId) => {
     console.log('Approving KYC for user:', userId);
+    // Add blockchain call to approve here
   };
 
   const handleRejectKYC = (userId) => {
     console.log('Rejecting KYC for user:', userId);
+    // Add blockchain call to reject here
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+      <Navbar userRole="Regional Admin" navItems={navItems} />
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
@@ -110,10 +118,10 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Pending KYC Table/List */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100">
           <div className="p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Pending KYC Verifications</h3>
-            
             <div className="space-y-4">
               {pendingKYC.map((user) => (
                 <div key={user.id} className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6">
@@ -128,7 +136,6 @@ const AdminDashboard = () => {
                           <p className="text-sm text-gray-600">{user.email}</p>
                         </div>
                       </div>
-
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Wallet Address</p>
@@ -139,7 +146,6 @@ const AdminDashboard = () => {
                           <p className="text-sm text-gray-900">{user.phone}</p>
                         </div>
                       </div>
-
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-xs text-gray-600">Documents:</span>
                         {user.documents.map((doc, index) => (
@@ -149,7 +155,6 @@ const AdminDashboard = () => {
                         ))}
                       </div>
                     </div>
-
                     <div className="flex flex-col gap-2 ml-6">
                       <button className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center gap-2">
                         <Eye className="w-4 h-4" />
@@ -173,6 +178,9 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               ))}
+              {!pendingKYC.length && (
+                <div className="text-center text-gray-500 p-8">No pending KYC verifications.</div>
+              )}
             </div>
           </div>
         </div>

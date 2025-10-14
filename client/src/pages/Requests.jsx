@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, Clock, CheckCircle, XCircle, User, Home, MapPin, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { Eye, Clock, CheckCircle, XCircle, User, Home, MapPin, Calendar, AlertCircle } from 'lucide-react';
+
 import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { usePropertyExchange } from '../hooks/usePropertyExchange';
 import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
@@ -9,15 +11,8 @@ import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 const Requests = () => {
   const navigate = useNavigate();
 
-  const navItems = [
-    { to: '/user/dashboard', label: 'Home', icon: Home },
-    { to: '/user/profile', label: 'Profile', icon: User },
-    { to: '/user/properties', label: 'Properties', icon: FileText },
-    { to: '/user/requests', label: 'Requests', icon: Eye },
-    { to: '/user/requested', label: 'Requested', icon: Send },
-    { to: '/user/explore', label: 'Explore', icon: Search }
-  ];
-  
+  const navItems = useNavItems();
+
   const [searchParams] = useSearchParams();
   const propertyIdFilter = searchParams.get('propertyId');
 

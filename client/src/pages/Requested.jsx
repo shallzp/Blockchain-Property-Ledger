@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Clock, CheckCircle, XCircle, Eye, Home, MapPin, User, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+
 import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { usePropertyExchange } from '../hooks/usePropertyExchange';
 import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
@@ -9,14 +11,7 @@ import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 const Requested = () => {
   const navigate = useNavigate();
   
-  const navItems = [
-    { to: '/user/dashboard', label: 'Home', icon: Home },
-    { to: '/user/profile', label: 'Profile', icon: User },
-    { to: '/user/properties', label: 'Properties', icon: FileText },
-    { to: '/user/requests', label: 'Requests', icon: Eye },
-    { to: '/user/requested', label: 'Requested', icon: Send },
-    { to: '/user/explore', label: 'Explore', icon: Search }
-  ];
+  const navItems = useNavItems();
   
   const { isConnected, currentAccount, web3, loading: web3Loading } = useWeb3();
   const { getRequestedSales, transferOwnership, getStatusOfPurchaseRequest } = usePropertyExchange();
@@ -461,3 +456,174 @@ const Requested = () => {
 };
 
 export default Requested;
+
+
+// import { useState, useEffect } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { Send, Clock, CheckCircle, XCircle, Eye, Home, MapPin, User, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+
+// import Navbar from '../components/Navbar';
+// import { useWeb3 } from '../context/Web3Context';
+// import { usePropertyExchange } from '../hooks/usePropertyExchange';
+// import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
+
+// const Requested = () => {
+//   const navigate = useNavigate();
+
+//   const navItems = [
+//     { to: '/user/dashboard', label: 'Home', icon: Home },
+//     { to: '/profile', label: 'Profile', icon: User },
+//     { to: '/user/properties', label: 'Properties', icon: FileText },
+//     { to: '/user/requests', label: 'Requests', icon: Eye },
+//     { to: '/user/requested', label: 'Requested', icon: Send },
+//     { to: '/user/explore', label: 'Explore', icon: Search }
+//   ];
+
+//   const { isConnected, currentAccount, web3 } = useWeb3();
+//   const { getRequestedSales, transferOwnership, getStatusOfPurchaseRequest } = usePropertyExchange();
+//   const { getPropertyDetails } = usePropertyRegistry();
+
+//   const [sentRequests, setSentRequests] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [filterStatus, setFilterStatus] = useState('all');
+//   const [selectedRequest, setSelectedRequest] = useState(null);
+//   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+//   const statusMap = {
+//     0: 'pending',
+//     1: 'cancelled',
+//     2: 'accepted',
+//     3: 'rejected',
+//     4: 'completed'
+//   };
+
+//   useEffect(() => {
+//     if (!web3.loading && !isConnected) {
+//       navigate('/');
+//     }
+//   }, [isConnected, web3.loading, navigate]);
+
+//   // Fetch requests
+//   useEffect(() => {
+//     const fetchRequests = async () => {
+//       if (isConnected && currentAccount) {
+//         try {
+//           setLoading(true);
+//           const sales = await getRequestedSales(currentAccount);
+//           const requests = await Promise.all(sales.map(async (sale) => {
+//             try {
+//               const property = await getPropertyDetails(sale.propertyId);
+//               const requestStatusData = await getStatusOfPurchaseRequest(sale.saleId);
+//               return {
+//                 id: sale.saleId,
+//                 propertyId: sale.propertyId,
+//                 property: `Property #${sale.propertyId}`,
+//                 location: `Location ${property.locationId}`,
+//                 seller: sale.owner,
+//                 sellerWallet: sale.owner,
+//                 offerPrice: sale.acceptedPrice || sale.price,
+//                 askingPrice: sale.price,
+//                 status: statusMap[requestStatusData.state] || 'pending',
+//                 sentDate: new Date().toLocaleDateString(),
+//                 acceptedDate: sale.acceptedTime > 0 ? new Date(parseInt(sale.acceptedTime) * 1000).toLocaleDateString() : null,
+//                 deadline: sale.deadlineForPayment > 0 ? new Date(parseInt(sale.deadlineForPayment) * 1000) : null,
+//                 paymentDone: sale.paymentDone,
+//                 saleState: sale.state,
+//                 propertyDetails: property,
+//                 requestDetails: requestStatusData
+//               };
+//             } catch (error) {
+//               console.error('Error fetching property details:', error);
+//               return null;
+//             }
+//           }));
+//           setSentRequests(requests.filter(r => r));
+//         } catch (error) {
+//           console.error('Error fetching requests:', error);
+//         } finally {
+//           setLoading(false);
+//         }
+//       }
+//     };
+//     fetchRequests();
+//   }, [isConnected, currentAccount, getRequestedSales, getPropertyDetails, getStatusOfPurchaseRequest]);
+
+//   // Filter requests
+//   const filteredRequests = sentRequests.filter(r => {
+//     if (filterStatus === 'all') return true;
+//     return r.status === filterStatus;
+//   });
+
+//   // Calculate stats
+//   const stats = {
+//     total: sentRequests.length,
+//     pending: sentRequests.filter(r => r.status === 'pending').length,
+//     accepted: sentRequests.filter(r => r.status === 'accepted').length,
+//     rejected: sentRequests.filter(r => r.status === 'rejected').length,
+//     completed: sentRequests.filter(r => r.status === 'completed').length
+//   };
+
+//   const handleCompletePurchase = (request) => {
+//     setSelectedRequest(request);
+//     setShowPaymentModal(true);
+//   };
+
+//   const processPayment = async () => {
+//     if (!selectedRequest) return;
+//     setLoading(true);
+//     try {
+//       await transferOwnership(selectedRequest.id, selectedRequest.offerPrice);
+//       alert('Purchase successful!');
+//       setShowPaymentModal(false);
+//       setSelectedRequest(null);
+//       // Refresh requests after purchase
+//       // Instead of window.location.reload(), refresh data
+//       // You can trigger fetch request function here again or update state accordingly
+//     } catch (error) {
+//       alert('Failed to complete purchase: ' + error.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const isDeadlinePassed = (deadline) => {
+//     if (!deadline) return false;
+//     return new Date() > deadline;
+//   };
+
+//   if (web3.loading || loading) {
+//     return (
+//       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>
+//           <p className="text-gray-600">Loading your requests...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
+//       <Navbar userRole="User" walletAdd={currentAccount} />
+//       {/* Rest of your JSX for displaying requests, filters, and modals */}
+//       {showPaymentModal && (
+//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//           <div className="bg-white rounded-2xl max-w-md w-full p-6">
+//             <h3 className="text-2xl font-bold mb-4">Complete Purchase</h3>
+//             <div className="mb-6 space-y-4">
+//               {/* Modal content */}
+//               <p>Property #{selectedRequest.propertyId}</p>
+//               <p>Amount: {selectedRequest.offerPrice} ETH</p>
+//             </div>
+//             <div className="flex gap-3">
+//               <button onClick={() => { setShowPaymentModal(false); setSelectedRequest(null); }} className="flex-1 bg-gray-100 py-2 rounded-lg">Cancel</button>
+//               <button onClick={processPayment} className="flex-1 bg-green-500 py-2 rounded-lg text-white">Confirm</button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Requested;

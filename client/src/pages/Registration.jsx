@@ -19,20 +19,21 @@ const Registration = () => {
     dateOfBirth: "",
     aadharNumber: "",
     resAddress: "",
-    aadharFile: null,
-    aadharFileHash: ""
+    // aadharFile: null, // commented out as no upload for now
+    // aadharFileHash: "" // commented out as no upload for now
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  // const [uploadProgress, setUploadProgress] = useState(0); // commented out upload progress
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value /*, files*/ } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      // [name]: files ? files[0] : value,
+      [name]: value,
     }));
     setError("");
   };
@@ -62,20 +63,22 @@ const Registration = () => {
       setError('Valid Aadhaar number (12 digits) is required');
       return false;
     }
-    if (!formData.aadharFile) {
-      setError("Aadhaar PDF upload is required");
-      return false;
-    }
+    // Upload validation removed for now
+    // if (!formData.aadharFile) {
+    //   setError("Aadhaar PDF upload is required");
+    //   return false;
+    // }
     return true;
   };
 
-  // Simple IPFS upload (replace with your secure implementation)
+  // Upload function commented out for now
+  /*
   const uploadToIPFS = async (file) => {
     console.log('Uploading file to IPFS:', file.name);
-    // TODO: Replace with actual IPFS upload (Pinata, Web3.Storage, etc.)
     await new Promise(resolve => setTimeout(resolve, 1500));
     return `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
   };
+  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,22 +94,21 @@ const Registration = () => {
 
     setIsSubmitting(true);
     setError('');
-    setUploadProgress(0);
+    // setUploadProgress(0); // commented out
 
     try {
-      // Step 1: Upload Aadhaar file to IPFS
+      // Upload step omitted for now
+      /*
       console.log('Uploading Aadhaar to IPFS...');
       setUploadProgress(25);
-      
+
       const ipfsHash = await uploadToIPFS(formData.aadharFile);
-      // If using secure upload: const ipfsHash = await uploadToIPFSSecure(formData.aadharFile);
-      
       console.log('IPFS Hash:', ipfsHash);
       setUploadProgress(50);
+      */
 
-      // Step 2: Register user on blockchain
       console.log('Registering user on blockchain...');
-      
+
       const tx = await registerUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -114,10 +116,10 @@ const Registration = () => {
         aadharNumber: formData.aadharNumber,
         resAddress: formData.resAddress,
         email: formData.email,
-        aadharFileHash: ipfsHash
+        // aadharFileHash: ipfsHash // commented out as no upload
       });
 
-      setUploadProgress(100);
+      // setUploadProgress(100); // commented out
       console.log('Transaction:', tx);
 
       console.log('User registered with data:', {
@@ -127,14 +129,14 @@ const Registration = () => {
         aadharNumber: formData.aadharNumber,
         resAddress: formData.resAddress,
         email: formData.email,
-        aadharFileHash: ipfsHash,
+        // aadharFileHash: ipfsHash, // commented out
         walletAddress: currentAccount,
         role: 'User', // Always registered as User
         verified: false // Requires Regional Admin verification
       });
 
       setSuccess(true);
-      
+
       // Redirect to pending verification page
       setTimeout(() => {
         navigate('/pending-verification');
@@ -143,7 +145,7 @@ const Registration = () => {
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || 'Registration failed. Please try again.');
-      setUploadProgress(0);
+      // setUploadProgress(0); // commented out
     } finally {
       setIsSubmitting(false);
     }
@@ -184,6 +186,7 @@ const Registration = () => {
   }
 
   return (
+    // Main registration form UI below (unchanged except for aadharFile input commented out above)
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-8">
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -257,7 +260,7 @@ const Registration = () => {
                 placeholder="Enter your first name" 
                 required={true}
               />
-             
+            
               <FormInput 
                 label="Last Name" 
                 Icon={User} 
@@ -314,7 +317,8 @@ const Registration = () => {
               required={true}
             />
 
-            <FormInput 
+            {/* Upload input removed for now */}
+            {/* <FormInput 
               label="Upload Aadhaar Card (PDF Format)" 
               Icon={Upload} 
               type="file" 
@@ -322,9 +326,9 @@ const Registration = () => {
               onChange={handleInputChange} 
               accept=".pdf" 
               required={true}
-            />
+            /> */}
 
-            <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
+            {/* <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-gray-700">
@@ -335,7 +339,7 @@ const Registration = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <button
               type="submit"
@@ -350,16 +354,8 @@ const Registration = () => {
                 <div>
                   <span className="flex items-center justify-center gap-2 mb-2">
                     <Loader className="w-5 h-5 animate-spin" />
-                    {uploadProgress < 50 ? 'Uploading to IPFS...' : 'Registering on Blockchain...'}
+                    {'Registering on Blockchain...'}
                   </span>
-                  {uploadProgress > 0 && (
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                  )}
                 </div>
               ) : !isConnected ? (
                 'Please Connect Wallet'

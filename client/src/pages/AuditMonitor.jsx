@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Table, Loader, AlertCircle, CheckCircle, XCircle, Search, ChevronRight } from 'lucide-react';
+import { Loader, AlertCircle, CheckCircle, XCircle, Search, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../components/Navbar';
 import { useWeb3 } from '../context/Web3Context';
-// import { useTransactionAudit } from '../hooks/useTransactionAudit';
+import { useTransactionAudit } from '../hooks/useTransactionAudit';
 
-const Monitor = () => {
+const AuditMonitor = () => {
   const navigate = useNavigate();
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getAllTransactions, loading: auditLoading } = useTransactionAudit();
@@ -16,23 +16,20 @@ const Monitor = () => {
   const [search, setSearch] = useState('');
   const [filteredTx, setFilteredTx] = useState([]);
 
-  // Redirect if not Main Admin
   useEffect(() => {
     if (!web3Loading && !isConnected) {
       navigate('/');
       return;
     }
-    // Ideally role check here or via routing guards to restrict to Main Admin
+    // Add Main Admin role check here if needed
   }, [isConnected, web3Loading, navigate]);
 
-  // Fetch all transactions on mount
   useEffect(() => {
     const fetchTransactions = async () => {
       if (isConnected) {
         setLoading(true);
         try {
           const txs = await getAllTransactions();
-          // Assuming txs is an array sorted newest first
           setTransactions(txs);
           setFilteredTx(txs);
         } catch (error) {
@@ -45,21 +42,18 @@ const Monitor = () => {
     fetchTransactions();
   }, [isConnected, getAllTransactions]);
 
-  // Filter transactions by search input
   useEffect(() => {
     if (!search.trim()) {
       setFilteredTx(transactions);
       return;
     }
     const lower = search.toLowerCase();
-
-    const filtered = transactions.filter(tx => 
-      tx.txHash.toLowerCase().includes(lower) ||
+    const filtered = transactions.filter(tx =>
+      (tx.txHash && tx.txHash.toLowerCase().includes(lower)) ||
       (tx.from && tx.from.toLowerCase().includes(lower)) ||
       (tx.to && tx.to.toLowerCase().includes(lower)) ||
       (tx.type && tx.type.toLowerCase().includes(lower))
     );
-
     setFilteredTx(filtered);
   }, [search, transactions]);
 
@@ -112,7 +106,7 @@ const Monitor = () => {
                   <th className="px-4 py-3">To</th>
                   <th className="px-4 py-3">Type</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Timestamp</th>
+                  <th className="px-4 py-3">Event</th>
                   <th className="px-4 py-3 text-center">Details</th>
                 </tr>
               </thead>
@@ -132,10 +126,10 @@ const Monitor = () => {
                         <XCircle className="text-red-600 w-5 h-5 inline" />
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2">{new Date(tx.timestamp * 1000).toLocaleString()}</td>
+                    <td className="px-4 py-2">{tx.event}</td>
                     <td className="whitespace-nowrap px-4 py-2 text-center">
                       <button
-                        onClick={() => navigate(`/transaction/${tx.txHash}`)}
+                        onClick={() => alert(JSON.stringify(tx.args, null, 2))}
                         className="text-orange-600 hover:text-orange-700 flex items-center justify-center gap-1"
                       >
                         <ChevronRight className="w-5 h-5" />
@@ -153,4 +147,4 @@ const Monitor = () => {
   );
 };
 
-export default Monitor;
+export default AuditMonitor;

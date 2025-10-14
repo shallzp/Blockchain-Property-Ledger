@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import { useWeb3 } from '../context/Web3Context';
-import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 import { useNavigate } from 'react-router-dom';
 import { Loader, CheckCircle, XCircle, AlertCircle, MapPin, Maximize, FileText, Home, Calendar } from 'lucide-react';
 
+import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
+import { useWeb3 } from '../context/Web3Context';
+import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
+
 const VerifyProperty = () => {
   const navigate = useNavigate();
+
+  const navItems = useNavItems();
+
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { 
     getPendingPropertiesForVerification, 
@@ -86,7 +91,7 @@ const VerifyProperty = () => {
   if (web3Loading || loading || contractLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-        <Navbar userRole="Regional Admin" walletAdd={currentAccount} />
+        <Navbar userRole="Regional Admin" walletAdd={currentAccount} navItems={navItems} />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <Loader className="w-16 h-16 animate-spin text-orange-500 mx-auto" />
         </div>
@@ -96,7 +101,7 @@ const VerifyProperty = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-      <Navbar userRole="Regional Admin" walletAdd={currentAccount} />
+      <Navbar userRole="Regional Admin" walletAdd={currentAccount} navItems={navItems} />
 
       <div className="max-w-7xl mx-auto px-8 py-12">
         {/* Header */}

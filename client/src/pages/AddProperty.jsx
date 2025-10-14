@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, MapPin, Maximize, FileText, Loader, CheckCircle, XCircle, AlertCircle, Upload, Building, Hash } from 'lucide-react';
+
 import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 import { useUserRegistry } from '../hooks/useUserRegistry';
 
 const AddProperty = () => {
   const navigate = useNavigate();
+  const navItems = useNavItems(); 
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { addLand, loading: contractLoading } = usePropertyRegistry();
   const { getUserDetails, isUserVerified } = useUserRegistry();
@@ -143,7 +146,7 @@ const AddProperty = () => {
   if (web3Loading || checkingVerification) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-        <Navbar userRole="Citizen" walletAdd={currentAccount} />
+        <Navbar userRole="User" walletAdd={currentAccount} navItems={navItems} />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>

@@ -24,13 +24,14 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar - Fixed at top */}
-      <nav className="absolute top-0 left-0 right-0 z-50 px-8 py-6">
+      <nav className="top-0 left-0 right-0 z-50 px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
+          
           {/* Logo Section */}
           <div className="flex items-center space-x-12">
             <div className="flex items-center space-x-2">
               <img src="./Logo.png" alt="PropChain Logo" className="w-8 h-8" />
-              <span className="text-2xl font-bold text-white">PropChain</span>
+              <span className="text-2xl font-bold">PropChain</span>
             </div>
           </div>
 
@@ -54,19 +55,15 @@ const Landing = () => {
 
       {/* Hero Section */}
       <div className="relative">
-        <div className="relative min-h-screen flex items-center">
+        <div className="mx-28 relative max-h-screen flex items-center w-350">
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/85 to-orange-900/80 z-10"></div>
-            <img 
-              src="./assets/backdrop.jpg" 
-              alt="Hero Background"
-              className="w-full h-full object-cover"
-            />
+            <div className="rounded-2xl absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/85 to-orange-900/80 z-10"></div>
+            {/* <img src="./assets/backdrop.jpg" alt="Hero Background" className="w-full h-full object-cover" /> */}
           </div>
 
           {/* Hero Content */}
-          <div className="relative z-20 max-w-7xl mx-auto px-8 py-32 w-full">
+          <div className="relative z-20 max-w-7xl mx-auto px-8 pt-12 pb-32 w-full">
             <div className="max-w-4xl">
               <h1 className="text-7xl md:text-8xl font-bold mb-8">
                 <span className="text-white">THE </span>

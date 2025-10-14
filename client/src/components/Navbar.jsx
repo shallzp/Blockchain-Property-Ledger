@@ -1,3 +1,4 @@
+// Navbar.jsx
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Search, User, FileText, Send, Eye, LogOut, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
@@ -11,7 +12,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
   const baseStyle = "px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2 rounded-lg hover:bg-orange-50";
   const activeStyle = "px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm flex items-center gap-2";
 
-  // Use navigation items passed via props
+  // Ensure navItems is defined
   const navigationItems = navItems || [];
 
   const handleDisconnect = () => {
@@ -25,14 +26,16 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  console.log("Navbar navItems:", navigationItems);
+
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
       {/* Logo Section */}
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/user/dashboard')}>
-        <img src="./Logo.png" alt="PropChain Logo" className="w-8 h-8" />
+        <img src="../Logo.png" alt="PropChain Logo" className="w-8 h-8" />
         <span className="text-xl font-bold text-gray-800">PropChain</span>
       </div>
-      
+
       {/* Navigation Links */}
       <div className="flex items-center gap-2">
         {navigationItems.map((item) => {
@@ -48,7 +51,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
           );
         })}
       </div>
-    
+
       {/* Right Section - User Info */}
       <div className="flex items-center gap-3">
         {/* User Role Badge */}

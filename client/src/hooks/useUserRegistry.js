@@ -169,7 +169,55 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry, currentAccount]);
 
+  // GET ALL REGIONAL ADMINS (add this function!)
+  const getAllRegionalAdmins = useCallback(async () => {
+    if (!contracts.userRegistry)
+      throw new Error('UserRegistry contract not loaded');
+    try {
+      return await contracts.userRegistry.methods.getAllRegionalAdmins().call();
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch regional admins';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry]);
+
+  // Add this to your useUserRegistry hook
+  const getPendingUserVerifications = useCallback(async () => {
+    if (!contracts.userRegistry)
+      throw new Error('UserRegistry contract not loaded');
+    try {
+      // Call your new contract method to get pending user addresses
+      const pendingAddresses = await contracts.userRegistry.methods.getPendingUserVerifications().call();
+
+      // Now loop and fetch details for those addresses (optional, if showing details)
+      const pendingUsers = await Promise.all(
+        pendingAddresses.map(async (addr) => {
+          const details = await contracts.userRegistry.methods.getUserDetails(addr).call();
+          return {
+            walletAddress: addr,
+            firstName: details.firstName,
+            lastName: details.lastName,
+            dateOfBirth: details.dateOfBirth,
+            email: details.email,
+            resAddress: details.resAddress,
+            aadharNumber: details.aadharNumber,
+            aadharFileHash: details.aadharFileHash,
+            // ... add other details as you wish
+          };
+        })
+      );
+      return pendingUsers;
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch pending verifications';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry]);
+
+
   return {
+    contracts,
     registerUser,
     getUserDetails,
     isUserRegistered,
@@ -177,6 +225,9 @@ export const useUserRegistry = () => {
     verifyUser,
     addRegionalAdmin,
     isRegionalAdmin,
+    // ADD THIS EXPORT:
+    getAllRegionalAdmins,
+    getPendingUserVerifications,
     loading,
     error,
   };

@@ -30,6 +30,8 @@ contract UserRegistry {
 
     address public mainAdministrator;
 
+    address[] private allUsers;
+
     event UserRegistered(address indexed userID, Role role, uint256 indexed accountCreatedDateTime);
     event UserVerified(address indexed userID, Role role); //for User
     event RegionalAdminAdded(address indexed userID);
@@ -46,34 +48,96 @@ contract UserRegistry {
     }
 
     // First wallet becomes system deployer
+    // constructor(
+    //     string memory _firstName,
+    //     string memory _lastName,
+    //     string memory _dateOfBirth,
+    //     string memory _aadharNumber,
+    //     string memory _resAddress,
+    //     string memory _email,
+    //     string memory _aadharFileHash
+    // ) {
+    //     mainAdministrator = msg.sender;
+    //     users[msg.sender] = User({
+    //         userID: msg.sender,
+    //         firstName: _firstName,
+    //         lastName: _lastName,
+    //         dateOfBirth: _dateOfBirth,
+    //         aadharNumber: _aadharNumber,
+    //         resAddress: _resAddress,
+    //         email: _email,
+    //         aadharFileHash: _aadharFileHash,
+    //         role: Role.MainAdministrator,
+    //         verified: true,
+    //         accountCreatedDateTime: block.timestamp,
+    //         totalIndices: 0,  
+    //         requestIndices: 0   
+    //     });
+    //     registeredUsers[msg.sender] = true;
+    //     emit UserRegistered(msg.sender, Role.MainAdministrator, block.timestamp);
+    // }
+
+    struct UserProfile {
+        string firstName;
+        string lastName;
+        string dateOfBirth;
+        string aadharNumber;
+        string resAddress;
+        string email;
+        string aadharFileHash;
+    }
+    
     constructor(
-        string memory _firstName,
-        string memory _lastName,
-        string memory _dateOfBirth,
-        string memory _aadharNumber,
-        string memory _resAddress,
-        string memory _email,
-        string memory _aadharFileHash
+        UserProfile memory mainAdminProfile,
+        address initialRegionalAdminAddress,
+        UserProfile memory initialRegionalAdminProfile
     ) {
         mainAdministrator = msg.sender;
+
         users[msg.sender] = User({
             userID: msg.sender,
-            firstName: _firstName,
-            lastName: _lastName,
-            dateOfBirth: _dateOfBirth,
-            aadharNumber: _aadharNumber,
-            resAddress: _resAddress,
-            email: _email,
-            aadharFileHash: _aadharFileHash,
+            firstName: mainAdminProfile.firstName,
+            lastName: mainAdminProfile.lastName,
+            dateOfBirth: mainAdminProfile.dateOfBirth,
+            aadharNumber: mainAdminProfile.aadharNumber,
+            resAddress: mainAdminProfile.resAddress,
+            email: mainAdminProfile.email,
+            aadharFileHash: mainAdminProfile.aadharFileHash,
             role: Role.MainAdministrator,
             verified: true,
             accountCreatedDateTime: block.timestamp,
-            totalIndices: 0,  
-            requestIndices: 0   
+            totalIndices:0,
+            requestIndices:0
         });
+
         registeredUsers[msg.sender] = true;
         emit UserRegistered(msg.sender, Role.MainAdministrator, block.timestamp);
+
+        users[initialRegionalAdminAddress] = User({
+            userID: initialRegionalAdminAddress,
+            firstName: initialRegionalAdminProfile.firstName,
+            lastName: initialRegionalAdminProfile.lastName,
+            dateOfBirth: initialRegionalAdminProfile.dateOfBirth,
+            aadharNumber: initialRegionalAdminProfile.aadharNumber,
+            resAddress: initialRegionalAdminProfile.resAddress,
+            email: initialRegionalAdminProfile.email,
+            aadharFileHash: initialRegionalAdminProfile.aadharFileHash,
+            role: Role.RegionalAdmin,
+            verified: true,
+            accountCreatedDateTime: block.timestamp,
+            totalIndices: 0,
+            requestIndices: 0
+        });
+
+        registeredUsers[initialRegionalAdminAddress] = true;
+        regionalAdmins[initialRegionalAdminAddress] = true;
+        countRegionalAdmins++;
+
+        emit UserRegistered(initialRegionalAdminAddress, Role.RegionalAdmin, block.timestamp);
+        emit RegionalAdminAdded(initialRegionalAdminAddress);
+        emit UserVerified(initialRegionalAdminAddress, Role.RegionalAdmin);
     }
+
 
     function updateMainAdminProfile(
         string memory _firstName,
@@ -128,6 +192,8 @@ contract UserRegistry {
         users[msg.sender] = newUser;
         registeredUsers[msg.sender] = true;
         aadharNumbers[_aadharNumber] = true;
+
+        allUsers.push(msg.sender);
 
         emit UserRegistered(msg.sender, Role.User, block.timestamp);
     }
@@ -207,5 +273,35 @@ contract UserRegistry {
 
     function isRegionalAdmin(address _user) public view returns (bool) {
         return regionalAdmins[_user];
+    }
+
+    function getAllRegionalAdmins() public view returns (address[] memory) {
+        address[] memory admins = new address[](countRegionalAdmins);
+        uint count = 0;
+        for (uint i = 0; i < allUsers.length; i++) {
+            if (users[allUsers[i]].role == Role.RegionalAdmin) {
+                admins[count] = allUsers[i];
+                count++;
+            }
+        }
+        return admins;
+    }
+
+    function getPendingUserVerifications() public view returns(address[] memory) {
+        uint count = 0;
+        for (uint i = 0; i < allUsers.length; i++) {
+            if (users[allUsers[i]].role == Role.User && !users[allUsers[i]].verified) {
+                count++;
+            }
+        }
+        address[] memory pending = new address[](count);
+        uint idx = 0;
+        for (uint i = 0; i < allUsers.length; i++) {
+            if (users[allUsers[i]].role == Role.User && !users[allUsers[i]].verified) {
+                pending[idx] = allUsers[i];
+                idx++;
+            }
+        }
+        return pending;
     }
 }

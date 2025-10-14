@@ -11,7 +11,7 @@ const ManageAdmin = () => {
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const {
     getAllRegionalAdmins,
-    promoteToRegionalAdmin,
+    addRegionalAdmin,
     removeRegionalAdmin,
     getUserDetails,
     updateAdminRevenueDept,
@@ -48,13 +48,23 @@ const ManageAdmin = () => {
     if (!web3Loading) checkAuth();
   }, [isConnected, currentAccount, web3Loading, navigate, getUserDetails]);
 
+  // === Updated/Fixes: FETCH ADMINS ON LOAD ===
   useEffect(() => {
     const fetchAdmins = async () => {
       if (isConnected) {
         setLoading(true);
         try {
           const admins = await getAllRegionalAdmins();
-          setRegionalAdmins(admins);
+          // Adapt for your data shape: if returns pure address[], convert to object if needed
+          // Here we assume the contract returns address[] and you'll fetch more details per admin below if required.
+          // For richer response, you may want to fetch each admin's details and set array of { walletAddress, ... } objects.
+          setRegionalAdmins(
+            admins.map(addr => ({
+              walletAddress: addr,
+              // Make additional info available for UI:
+              verified: true, // If available, or fetch detail from getUserDetails
+            }))
+          );
         } catch (error) {
           console.error('Failed fetching admins:', error);
         } finally {
@@ -80,7 +90,6 @@ const ManageAdmin = () => {
     }
   };
 
-
   const handleAddAdmin = async (event) => {
     event.preventDefault();
     if (!newAdminAddress || !newRevenueDept) {
@@ -90,13 +99,13 @@ const ManageAdmin = () => {
     setProcessingUser(newAdminAddress);
     setProcessingAction('promote');
     try {
-      await promoteToRegionalAdmin(newAdminAddress, newRevenueDept);
+      await addRegionalAdmin, (newAdminAddress, newRevenueDept);
       alert(`User ${newAdminAddress} promoted to Regional Admin with Revenue Dept ${newRevenueDept}`);
       setNewAdminAddress('');
       setNewRevenueDept('');
       setShowAddModal(false);
       const admins = await getAllRegionalAdmins();
-      setRegionalAdmins(admins);
+      setRegionalAdmins(admins.map(addr => ({ walletAddress: addr, verified: true })));
     } catch (error) {
       console.error('Promotion failed:', error);
       alert('Failed to promote: ' + error.message);
@@ -112,7 +121,7 @@ const ManageAdmin = () => {
       await removeRegionalAdmin(walletAddress);
       alert(`Regional Admin ${walletAddress} removed`);
       const admins = await getAllRegionalAdmins();
-      setRegionalAdmins(admins);
+      setRegionalAdmins(admins.map(addr => ({ walletAddress: addr, verified: true })));
     } catch (error) {
       console.error('Removal failed:', error);
       alert('Failed to remove: ' + error.message);
@@ -130,7 +139,7 @@ const ManageAdmin = () => {
       await updateAdminRevenueDept(walletAddress, newDeptId);
       alert(`Updated Revenue Dept for admin ${walletAddress} to ${newDeptId}`);
       const admins = await getAllRegionalAdmins();
-      setRegionalAdmins(admins);
+      setRegionalAdmins(admins.map(addr => ({ walletAddress: addr, verified: true })));
     } catch (error) {
       console.error('Update failed:', error);
       alert('Failed to update Revenue Dept: ' + error.message);
@@ -192,7 +201,6 @@ const ManageAdmin = () => {
           <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
             <Shield className="w-6 h-6 text-purple-600" /> Current Regional Admins ({regionalAdmins.length})
           </h2>
-
           {regionalAdmins.length === 0 ? (
             <p className="text-gray-500">No Regional Admins registered yet.</p>
           ) : (

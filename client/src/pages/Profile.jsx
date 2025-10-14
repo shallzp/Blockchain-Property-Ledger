@@ -308,8 +308,95 @@ const Profile = () => {
                   <p className="text-xs text-gray-500 mt-2">Name cannot be changed (blockchain immutable)</p>
                 </div>
 
-                {/* Continue with rest of your fields... */}
-                {/* I'm keeping your existing field structure */}
+                {/* Last Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <User className="w-4 h-4 inline mr-2" />
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={profileData.lastName}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition ${
+                      isEditing 
+                        ? 'border-gray-200 focus:border-orange-500 bg-white' 
+                        : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+
+                {/* Date of Birth (Read-only) */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Date of Birth
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.dateOfBirth}
+                    disabled
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl bg-gray-50 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Date of birth cannot be changed</p>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={profileData.email}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition ${
+                      isEditing 
+                        ? 'border-gray-200 focus:border-orange-500 bg-white' 
+                        : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+
+                {/* Residential Address */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <MapPin className="w-4 h-4 inline mr-2" />
+                    Residential Address
+                  </label>
+                  <textarea
+                    name="resAddress"
+                    value={profileData.resAddress}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    rows={3}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition ${
+                      isEditing 
+                        ? 'border-gray-200 focus:border-orange-500 bg-white' 
+                        : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+
+                {/* Aadhaar Number (Read-only) */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <CreditCard className="w-4 h-4 inline mr-2" />
+                    Aadhaar Number
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.aadharNumber}
+                    disabled
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl bg-gray-50 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Aadhaar cannot be changed for security reasons</p>
+                </div>
               </div>
             </div>
           </div>

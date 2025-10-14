@@ -21,7 +21,18 @@ contract("PropertyRegistry", (accounts) => {
   before(async () => {
     // Deploy contracts
     propertyRegistry = await PropertyRegistry.new({ from: mainAdmin });
-    userRegistry = await UserRegistry.new({ from: mainAdmin });
+    
+    userRegistry = await UserRegistry.new(
+      "Shalini",                // firstName
+      "Patel",                  // lastName
+      "2004-08-05",             // dateOfBirth
+      "1111-2222-3333",         // aadharNumber
+      "Sudama Nagar, Indore",   // resAddress
+      "shalini.patel050408@gmail.com", // email
+      "QmQ3BnTaszRiZXC3XTo4DWf4XWJHjqXUnp6EjAGTPbBWmp", // aadharFileHash
+      { from: mainAdmin }
+    );
+
     
     // Get PropertyLedger address from PropertyRegistry
     const propertyLedgerAddress = await propertyRegistry.getPropertiesContract();

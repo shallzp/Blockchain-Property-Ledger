@@ -116,7 +116,7 @@ const Registration = () => {
         aadharNumber: formData.aadharNumber,
         resAddress: formData.resAddress,
         email: formData.email,
-        // aadharFileHash: ipfsHash // commented out as no upload
+        aadharFileHash: ""// Provide empty string for now
       });
 
       // setUploadProgress(100); // commented out

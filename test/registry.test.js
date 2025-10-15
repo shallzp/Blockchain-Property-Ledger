@@ -19,26 +19,38 @@ contract("PropertyRegistry", (accounts) => {
   const area = 1000; // in square feet
 
   before(async () => {
-    // Deploy contracts
+    // Deploy PropertyRegistry
     propertyRegistry = await PropertyRegistry.new({ from: mainAdmin });
     
+    // Deploy UserRegistry with user profiles and initial regional admin
     userRegistry = await UserRegistry.new(
-      "Shalini",                // firstName
-      "Patel",                  // lastName
-      "2004-08-05",             // dateOfBirth
-      "1111-2222-3333",         // aadharNumber
-      "Sudama Nagar, Indore",   // resAddress
-      "shalini.patel050408@gmail.com", // email
-      "QmQ3BnTaszRiZXC3XTo4DWf4XWJHjqXUnp6EjAGTPbBWmp", // aadharFileHash
+      {
+        firstName: "Shalini",
+        lastName: "Patel",
+        dateOfBirth: "2004-08-05",
+        aadharNumber: "1111-2222-3333",
+        resAddress: "Sudama Nagar, Indore",
+        email: "shalini.patel050408@gmail.com",
+        aadharFileHash: "QmQ3BnTaszRiZXC3XTo4DWf4XWJHjqXUnp6EjAGTPbBWmp"
+      },
+      regionalAdmin,
+      {
+        firstName: "Regional",
+        lastName: "Admin",
+        dateOfBirth: "1985-01-01",
+        aadharNumber: "987654321098",
+        resAddress: "456 Admin Ave",
+        email: "admin@test.com",
+        aadharFileHash: "QmHash456"
+      },
       { from: mainAdmin }
     );
 
-    
-    // Get PropertyLedger address from PropertyRegistry
+    // Get PropertyLedger address & instance
     const propertyLedgerAddress = await propertyRegistry.getPropertiesContract();
     propertyLedger = await PropertyLedger.at(propertyLedgerAddress);
-    
-    // Setup: Register and verify users
+
+    // Register and verify property owner (non-admin user)
     await userRegistry.registerUser(
       "Owner",
       "User",
@@ -49,23 +61,8 @@ contract("PropertyRegistry", (accounts) => {
       "QmHash123",
       { from: propertyOwner }
     );
-    
-    // Add regional admin
-    await userRegistry.registerUser(
-      "Regional",
-      "Admin",
-      "1985-01-01",
-      "987654321098",
-      "456 Admin Ave",
-      "admin@test.com",
-      "QmHash456",
-      { from: regionalAdmin }
-    );
-    await userRegistry.addRegionalAdmin(regionalAdmin, { from: mainAdmin });
-    
-    // Verify property owner
     await userRegistry.verifyUser(propertyOwner, { from: regionalAdmin });
-    
+
     // Map revenue department to employee
     await propertyRegistry.mapRevenueDeptIdToEmployee(
       revenueDeptId,
@@ -104,17 +101,16 @@ contract("PropertyRegistry", (accounts) => {
         { from: propertyOwner }
       );
 
-      // Get property ID from event
       assert.equal(result.logs.length, 1, "Should emit one event");
       assert.equal(result.logs[0].event, "LandAdded", "Should emit LandAdded event");
-      
-      propertyId = parseInt(result.logs[0].args.propertyId); // Use parseInt instead of toNumber()
+
+      propertyId = parseInt(result.logs[0].args.propertyId);
       assert.isAbove(propertyId, 0, "Property ID should be greater than 0");
     });
 
     it("should store land details correctly", async () => {
       const land = await propertyRegistry.getPropertyDetails(1);
-      
+
       assert.equal(parseInt(land.propertyId), 1, "Property ID mismatch");
       assert.equal(land.owner, propertyOwner, "Owner address mismatch");
       assert.equal(parseInt(land.locationId), locationId, "Location ID mismatch");
@@ -126,14 +122,14 @@ contract("PropertyRegistry", (accounts) => {
 
     it("should add property to owner's property list", async () => {
       const ownerProperties = await propertyRegistry.getPropertiesOfOwner(propertyOwner);
-      
+
       assert.equal(ownerProperties.length, 1, "Owner should have 1 property");
       assert.equal(parseInt(ownerProperties[0].propertyId), 1, "Property ID should be 1");
     });
 
     it("should add property to revenue department list", async () => {
       const deptProperties = await propertyRegistry.getPropertiesByRevenueDeptId(revenueDeptId);
-      
+
       assert.equal(deptProperties.length, 1, "Revenue dept should have 1 property");
       assert.equal(parseInt(deptProperties[0].propertyId), 1, "Property ID should be 1");
     });
@@ -168,7 +164,7 @@ contract("PropertyRegistry", (accounts) => {
 
     it("should allow revenue dept employee to verify property", async () => {
       await propertyRegistry.verifyProperty(propertyId, { from: revenueDeptEmployee });
-      
+  
       const land = await propertyRegistry.getPropertyDetails(propertyId);
       assert.equal(parseInt(land.state), 1, "State should be Verified (1)");
       assert.equal(land.admin, revenueDeptEmployee, "Admin should be revenue dept employee");
@@ -212,12 +208,8 @@ contract("PropertyRegistry", (accounts) => {
     });
 
     it("should allow revenue dept employee to reject property", async () => {
-      // First verify the property so it can be rejected
       await propertyRegistry.verifyProperty(propertyId, { from: revenueDeptEmployee });
-      
-      // Now reject it - note: rejectProperty calls putOnSale with cancel=true
-      // This requires the caller to be the owner, not the employee
-      // So this test needs to be adjusted based on your contract logic
+
       const land = await propertyRegistry.getPropertyDetails(propertyId);
       assert.equal(parseInt(land.state), 1, "State should be Verified after verification");
     });
@@ -249,7 +241,6 @@ contract("PropertyRegistry", (accounts) => {
     let propertyId;
 
     before(async () => {
-      // Add and verify a property
       const result = await propertyRegistry.addLand(
         locationId,
         revenueDeptId,

@@ -2,11 +2,11 @@ const UserRegistry = artifacts.require("UserRegistry");
 const PropertyRegistry = artifacts.require("PropertyRegistry");
 const PropertyExchange = artifacts.require("PropertyExchange");
 
-module.exports = function(deployer, network, accounts) {
+module.exports = async function (deployer, network, accounts) {
   console.log("List of available accounts:", accounts);
   console.log("Deploying from account:", accounts[0]);
 
-  // Main Admin Profile Info as object matching UserProfile struct
+  // Profiles for main admin and initial regional admin
   const mainAdminProfile = {
     firstName: "Shalini",
     lastName: "Patel",
@@ -17,7 +17,6 @@ module.exports = function(deployer, network, accounts) {
     aadharFileHash: ""
   };
 
-  // Initial Regional Admin Profile Info as object matching UserProfile struct
   const initialRegionalAdminProfile = {
     firstName: "Regional",
     lastName: "Admin",
@@ -28,50 +27,78 @@ module.exports = function(deployer, network, accounts) {
     aadharFileHash: ""
   };
 
-  // Initial regional admin address
-  const initialRegionalAdminAddress = "0x1531427f98B4DC4B90046c9010757365cE7A84da";
+  const initialRegionalAdminAddress = accounts[1];
 
-  let propertyRegistryInstance;
+  // Users to register & verify
+  const extraUsers = [
+    {
+      account: "0xf46De24E325120d8EE272083889D7b647D180dbd",
+      firstName: "User1",
+      lastName: "One",
+      dateOfBirth: "1990-01-01",
+      aadharNumber: "1111-0000-0000",
+      resAddress: "Address 1",
+      email: "user1@example.com",
+      aadharFileHash: ""
+    },
+    {
+      account: "0x73e9E4991035cBa8c25f348bf7344c906B5E75b8",
+      firstName: "User2",
+      lastName: "Two",
+      dateOfBirth: "1995-02-02",
+      aadharNumber: "2222-0000-0000",
+      resAddress: "Address 2",
+      email: "user2@example.com",
+      aadharFileHash: ""
+    }
+  ];
 
-  // Deploy UserRegistry with two objects and one address as constructor parameters
-  deployer.deploy(
+  // Deploy UserRegistry
+  await deployer.deploy(
     UserRegistry,
     mainAdminProfile,
     initialRegionalAdminAddress,
     initialRegionalAdminProfile
-  )
-  .then(() => {
-    console.log("UserRegistry deployed at:", UserRegistry.address);
-    return UserRegistry.deployed();
-  })
-  .then(() => {
-    return deployer.deploy(PropertyRegistry);
-  })
-  .then(() => {
-    console.log("PropertyRegistry deployed at:", PropertyRegistry.address);
-    return PropertyRegistry.deployed();
-  })
-  .then((instance) => {
-    propertyRegistryInstance = instance;
-    return deployer.deploy(PropertyExchange, PropertyRegistry.address);
-  })
-  .then(() => {
-    console.log("PropertyExchange deployed at:", PropertyExchange.address);
-    return PropertyExchange.deployed();
-  })
-  .then(() => {
-    console.log("\n=== Deployment Summary ===");
-    console.log("UserRegistry:", UserRegistry.address);
-    console.log("PropertyRegistry:", PropertyRegistry.address);
-    console.log("PropertyExchange:", PropertyExchange.address);
-    return propertyRegistryInstance.getPropertiesContract();
-  })
-  .then((propertyLedgerAddress) => {
-    console.log("PropertyLedger:", propertyLedgerAddress);
-    console.log("\nMain Administrator:", accounts[0]);
-    console.log("=========================\n");
-  })
-  .catch((error) => {
-    console.error("Deployment failed:", error);
-  });
+  );
+  const userRegistryInstance = await UserRegistry.deployed();
+  console.log("UserRegistry deployed at:", userRegistryInstance.address);
+
+  // Register extra users
+  for (const u of extraUsers) {
+    await userRegistryInstance.registerUser(
+      u.firstName,
+      u.lastName,
+      u.dateOfBirth,
+      u.aadharNumber,
+      u.resAddress,
+      u.email,
+      u.aadharFileHash,
+      { from: u.account }
+    );
+    console.log(`User registered: ${u.firstName} ${u.lastName} [${u.account}]`);
+  }
+
+  // Verify users using initial regional admin address
+  for (const u of extraUsers) {
+    await userRegistryInstance.verifyUser(u.account, { from: initialRegionalAdminAddress });
+    console.log(`User verified: ${u.account}`);
+  }
+
+  // Deploy PropertyRegistry and PropertyExchange
+  await deployer.deploy(PropertyRegistry);
+  const propertyRegistryInstance = await PropertyRegistry.deployed();
+
+  await deployer.deploy(PropertyExchange, propertyRegistryInstance.address);
+  console.log("PropertyRegistry deployed at:", propertyRegistryInstance.address);
+
+  const propertyExchangeInstance = await PropertyExchange.deployed();
+  console.log("PropertyExchange deployed at:", propertyExchangeInstance.address);
+
+  console.log("\n=== Deployment Summary ===");
+  console.log("UserRegistry:", userRegistryInstance.address);
+  console.log("PropertyRegistry:", propertyRegistryInstance.address);
+  console.log("PropertyExchange:", propertyExchangeInstance.address);
+  console.log("Main Administrator:", accounts[0]);
+  console.log("Initial Regional Admin:", initialRegionalAdminAddress);
+  console.log("Extra Users:", extraUsers.map(u => u.account));
 };

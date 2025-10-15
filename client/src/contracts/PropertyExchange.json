@@ -28772,12 +28772,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xFBfa21d11cc719aCa7342581058193FcaE2dd25E",
-      "transactionHash": "0x3d59284c6619058cc35cc69cdf9b45ded09b66728fd751d20dc273740a09e881"
+      "address": "0x62D97333cAaCAa1271D33047B1FBFC7cA284f378",
+      "transactionHash": "0x6dbfc31d412bdc0e44dce621a541965193380f8fc4048f41ade0d5556314f5aa"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-10-14T21:04:49.923Z",
+  "updatedAt": "2025-10-14T21:44:41.434Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

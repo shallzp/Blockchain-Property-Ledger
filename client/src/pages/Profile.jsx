@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, MapPin, Calendar, Edit2, Save, X, Shield, CheckCircle, AlertCircle, CreditCard, FileText } from 'lucide-react';
+
 import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const navigate = useNavigate();
+  
+  const navItems = useNavItems();
+
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getUserDetails, isUserRegistered } = useUserRegistry();
 
@@ -161,10 +166,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-      <Navbar 
-        userRole={getRoleDisplay(profileData.role)} 
-        walletAdd={profileData.walletAddress.slice(0, 10) + '...'} 
-      />
+      <Navbar userRole="User" walletAdd={currentAccount} navItems={navItems} />
 
       <div className="max-w-6xl mx-auto px-8 py-12">
         {/* Header */}

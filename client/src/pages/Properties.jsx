@@ -139,7 +139,7 @@ const Properties = () => {
             <p className="text-gray-600">Manage and view all your registered properties</p>
           </div>
           <button
-            onClick={() => navigate('/add-property')}
+            onClick={() => navigate('/user/add-property')}
             className="px-6 py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl font-medium hover:shadow-lg transition flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />

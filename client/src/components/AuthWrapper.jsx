@@ -327,7 +327,7 @@ const AuthWrapper = ({ children }) => {
           }
           const userDetails = await getUserDetails(wallet);
 
-          if (userDetails.role === "RegionalAdmin") { // Use exact string from your contract
+          if (userDetails.role === "Regional Admin") { // Use exact string from your contract
             setNavItems(adminNavItems);
             setLoading(false);
 

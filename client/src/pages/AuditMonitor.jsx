@@ -3,11 +3,13 @@ import { Loader, AlertCircle, CheckCircle, XCircle, Search, ChevronRight } from 
 import { useNavigate } from 'react-router-dom';
 
 import Navbar from '../components/Navbar';
+import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useTransactionAudit } from '../hooks/useTransactionAudit';
 
 const AuditMonitor = () => {
   const navigate = useNavigate();
+  const navItems = useNavItems();
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getAllTransactions, loading: auditLoading } = useTransactionAudit();
 
@@ -60,7 +62,7 @@ const AuditMonitor = () => {
   if (web3Loading || loading || auditLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-        <Navbar userRole="Main Administrator" walletAdd={currentAccount} />
+        <Navbar userRole="Main Administrator" walletAdd={currentAccount} navItems={navItems} />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
             <Loader className="w-16 h-16 animate-spin text-orange-500 mx-auto mb-4" />
@@ -73,7 +75,7 @@ const AuditMonitor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-      <Navbar userRole="Main Administrator" walletAdd={currentAccount} />
+      <Navbar userRole="Main Administrator" walletAdd={currentAccount} navItems={navItems} />
 
       <div className="max-w-7xl mx-auto px-8 py-12">
         <header className="mb-8 flex items-center justify-between">

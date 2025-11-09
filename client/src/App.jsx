@@ -95,8 +95,9 @@ function App() {
           element={
             <AuthWrapper>
               <Routes>
-                {/* User routes */}
                 <Route path="profile" element={<Profile/>} />
+
+                {/* User routes */}
                 <Route path="user/dashboard" element={<UserDashboard/>} />
                 <Route path="user/properties" element={<Properties/>} />
                 <Route path="user/add-property" element={<AddProperty/>} />

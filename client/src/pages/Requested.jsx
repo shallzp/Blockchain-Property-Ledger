@@ -166,7 +166,7 @@ const Requested = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-      <Navbar userRole="User" walletAdd={currentAccount} />
+      <Navbar userRole="User" walletAdd={currentAccount} navItems={navItems} />
 
       <div className="max-w-7xl mx-auto px-8 py-12">
         {/* Header */}

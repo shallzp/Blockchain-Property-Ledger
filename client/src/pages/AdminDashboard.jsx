@@ -4,11 +4,15 @@ import { Building2, Users, Home, Clock, FileCheck, TrendingUp, CheckCircle, XCir
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
+import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
 
 const AdminDashboard = () => {
-  const navItems = useNavItems();
   const navigate = useNavigate();
+  
+  const navItems = useNavItems();
+  
+  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getPendingUserVerifications } = useUserRegistry();
 
   // Dynamic dashboard stats
@@ -32,8 +36,8 @@ const AdminDashboard = () => {
       setLoading(true);
       try {
         // TODO: Replace with real contract/stat fetching
-        // const adminStats = await getAdminStats(); (implement)
-        // setStats(adminStats);
+        const adminStats = await getAdminStats(); (implement)
+        setStats(adminStats);
 
         const pending = await getPendingUserVerifications();
         setPendingKYC(pending);
@@ -69,7 +73,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <Navbar userRole="Regional Admin" navItems={navItems} />
+      <Navbar userRole="Regional Admin" walletAdd={currentAccount} navItems={navItems} />
       {/* Header */}
       <div className="relative px-8 py-12">
         <div className="max-w-6xl mx-auto">

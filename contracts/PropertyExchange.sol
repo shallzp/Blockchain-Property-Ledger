@@ -227,7 +227,7 @@ contract PropertyExchange {
         emit SaleAccepted(_saleId, _buyer, priceWei, sale.deadlineForPayment);
     }
 
-    // function to canel sale created by seller
+    // function to cancel sale created by seller
     function cancelSaleBySeller(uint256 _saleId) public returns (bool) {
         Sales storage sale = sales[_saleId];
         

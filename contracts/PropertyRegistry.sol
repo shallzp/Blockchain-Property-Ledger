@@ -34,6 +34,8 @@ contract PropertyRegistry {
     mapping(uint256 => uint256[]) private propertiesControlledByRevenueDept;
     mapping (uint256 => address) public revenueDeptIdToEmployee;
 
+    uint256[] private allProperties;
+
     // Set the address of the TransferOfOwnership contract (only once)
     function setTransferOwnershipContractAddress( address contractAddress ) public {
         require(transferOwnershipContractAddressUpdated==false,"Allowed Only Once to call");
@@ -46,6 +48,8 @@ contract PropertyRegistry {
     function addLand(uint256 _locationId, uint256 _revenueDepartmentId, uint256 _surveyNumber, uint256 _area) public returns (uint256) {
         address _owner = msg.sender;
         uint256 propertyId = propertiesContract.addLand(_locationId, _surveyNumber, _revenueDepartmentId, _owner, _area);
+
+        allProperties.push(propertyId); // track all properties
 
         propertiesOfOwner[_owner].push(propertyId); // Map property to owner
         propertiesControlledByRevenueDept[_revenueDepartmentId].push(propertyId); // Map property to revenue department
@@ -93,6 +97,32 @@ contract PropertyRegistry {
     // Get revenue dept id of a property
     function getRevenueDeptId(uint256 propertyId) private view returns (uint256) {
         return propertiesContract.getLandDetailsAsStruct(propertyId).revenueDepartmentId;
+    }
+
+    //Get pending properties
+    function getPendingPropertiesForVerification() public view returns (PropertyLedger.Land[] memory) {
+        uint count = 0;
+
+        // Count how many are in Registered state (assuming State 0 means Registered)
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.Registered) {
+                count++;
+            }
+        }
+
+        PropertyLedger.Land[] memory pendingProperties = new PropertyLedger.Land[](count);
+        uint idx = 0;
+
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.Registered) {
+                pendingProperties[idx] = land;
+                idx++;
+            }
+        }
+
+        return pendingProperties;
     }
 
     function verifyProperty( uint256 _propertyId ) public onlyRevenueDeptEmployee(getRevenueDeptId(_propertyId)) {

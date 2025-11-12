@@ -1,6 +1,5 @@
-// Navbar.jsx
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Search, User, FileText, Send, Eye, LogOut, ChevronDown } from 'lucide-react';
+import { User, FileText, LogOut, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 
@@ -12,8 +11,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
   const baseStyle = "px-4 py-2 text-gray-600 hover:text-orange-500 transition flex items-center gap-2 rounded-lg hover:bg-orange-50";
   const activeStyle = "px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm flex items-center gap-2";
 
-  // Ensure navItems is defined
-  const navigationItems = navItems || [];
+  const navigationItems = navItems;
 
   const handleDisconnect = () => {
     disconnectWallet();
@@ -25,8 +23,6 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
     if (address.length <= 13) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
-
-  console.log("Navbar navItems:", navigationItems);
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
@@ -52,9 +48,8 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
         })}
       </div>
 
-      {/* Right Section - User Info */}
+      {/* User Info */}
       <div className="flex items-center gap-3">
-        {/* User Role Badge */}
         <div className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium">
           {userRole || 'User'}
         </div>
@@ -75,7 +70,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
           {/* Dropdown Menu */}
           {showDropdown && (
             <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50">
-              {/* Wallet Details */}
+              {/* Wallet Address */}
               <div className="px-4 py-3 border-b border-gray-100">
                 <p className="text-xs text-gray-500 mb-1">Wallet Address</p>
                 <p className="text-sm font-mono text-gray-900 break-all">{walletAdd}</p>

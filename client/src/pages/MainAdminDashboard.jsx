@@ -72,12 +72,12 @@ const MainAdminDashboard = () => {
               <Shield className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Platform Owner Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Main Admin Dashboard</h1>
               <p className="text-sm text-gray-500">Monitor and control all PropChain platform operations</p>
             </div>
           </div>
           {/* Stats cards */}
-          <div className="grid grid-cols-4 gap-6 mt-8">
+          <div className="grid grid-cols-3 gap-6 mt-8">
             <button className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-left hover:shadow-xl transition">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -107,16 +107,6 @@ const MainAdminDashboard = () => {
               </div>
               <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.localAdmins}</h3>
               <p className="text-sm text-gray-500">Total Regional Admins</p>
-            </button>
-            <button className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-left hover:shadow-xl transition">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-12 h-12 bg-orange-200 rounded-xl flex items-center justify-center">
-                  <Pause className="w-6 h-6 text-orange-600" />
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.pendingAdmins}</h3>
-              <p className="text-sm text-gray-500">Pending Admin Requests</p>
             </button>
           </div>
           {/* Regional Admins list */}
@@ -151,35 +141,6 @@ const MainAdminDashboard = () => {
                       </div>
                       <h3 className="text-lg font-bold text-gray-800 mb-1">{admin.name}</h3>
                       <p className="text-xs text-gray-500">{admin.wallet}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Pending Admin Requests */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mt-12">
-            <div className="p-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Pending Regional Admin Approvals</h2>
-              {pendingAdmins.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">No pending admin requests.</div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingAdmins.map((admin, idx) => (
-                    <div key={admin.wallet || idx} className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-xl p-6">
-                      <div>
-                        <h4 className="font-bold text-gray-800">{admin.name}</h4>
-                        <div className="text-xs text-gray-500">{admin.wallet}</div>
-                        <div className="text-xs text-gray-500">{admin.region}</div>
-                      </div>
-                      <div className="flex gap-3">
-                        <button className="px-4 py-2 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4" /> Approve
-                        </button>
-                        <button className="px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition flex items-center gap-2">
-                          <XCircle className="w-4 h-4" /> Reject
-                        </button>
-                      </div>
                     </div>
                   ))}
                 </div>

@@ -3,7 +3,7 @@ pragma solidity ^0.8.21;
 
 contract UserRegistry {
 
-    enum Role { None, MainAdministrator, RegionalAdmin, User }
+    enum Role { MainAdministrator, RegionalAdmin, User }
 
     struct User {
         address userID;
@@ -47,36 +47,6 @@ contract UserRegistry {
         _;
     }
 
-    // First wallet becomes system deployer
-    // constructor(
-    //     string memory _firstName,
-    //     string memory _lastName,
-    //     string memory _dateOfBirth,
-    //     string memory _aadharNumber,
-    //     string memory _resAddress,
-    //     string memory _email,
-    //     string memory _aadharFileHash
-    // ) {
-    //     mainAdministrator = msg.sender;
-    //     users[msg.sender] = User({
-    //         userID: msg.sender,
-    //         firstName: _firstName,
-    //         lastName: _lastName,
-    //         dateOfBirth: _dateOfBirth,
-    //         aadharNumber: _aadharNumber,
-    //         resAddress: _resAddress,
-    //         email: _email,
-    //         aadharFileHash: _aadharFileHash,
-    //         role: Role.MainAdministrator,
-    //         verified: true,
-    //         accountCreatedDateTime: block.timestamp,
-    //         totalIndices: 0,  
-    //         requestIndices: 0   
-    //     });
-    //     registeredUsers[msg.sender] = true;
-    //     emit UserRegistered(msg.sender, Role.MainAdministrator, block.timestamp);
-    // }
-
     struct UserProfile {
         string firstName;
         string lastName;
@@ -87,6 +57,7 @@ contract UserRegistry {
         string aadharFileHash;
     }
     
+    // First wallet becomes system deployer
     constructor(
         UserProfile memory mainAdminProfile,
         address initialRegionalAdminAddress,

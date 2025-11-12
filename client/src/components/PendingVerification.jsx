@@ -2,7 +2,7 @@ import { AlertCircle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 
 const PendingVerification = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gradient-to-br from-orange-50 via-white to-orange-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-md w-full relative">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-xl font-bold">&times;</button>
         <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">

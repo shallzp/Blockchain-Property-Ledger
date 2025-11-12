@@ -34,6 +34,7 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, currentAccount]);
 
+
   // Get property details
   const getPropertyDetails = useCallback(async (propertyId) => {
     if (!contracts.propertyRegistry) {
@@ -64,6 +65,7 @@ export const usePropertyRegistry = () => {
       throw new Error(errorMsg);
     }
   }, [contracts.propertyRegistry, web3]);
+
 
   // Get all properties of owner
   const getPropertiesOfOwner = useCallback(async (ownerAddress) => {
@@ -97,6 +99,7 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, currentAccount, web3]);
 
+
   // Get properties by revenue department
   const getPropertiesByRevenueDept = useCallback(async (revenueDeptId) => {
     if (!contracts.propertyRegistry) {
@@ -128,8 +131,9 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, web3]);
 
+
   // Verify property (Revenue Dept Employee only)
-  const verifyProperty = useCallback(async (propertyId) => {
+  const verifyPropertyRegistration = useCallback(async (propertyId) => {
     if (!contracts.propertyRegistry) {
       throw new Error('PropertyRegistry contract not loaded');
     }
@@ -150,6 +154,31 @@ export const usePropertyRegistry = () => {
       throw new Error(errorMsg);
     }
   }, [contracts.propertyRegistry, currentAccount]);
+
+  // Reject property (Revenue Dept Employee only)
+  const rejectPropertyRegistration = useCallback(async (propertyId) => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await contracts.propertyRegistry.methods
+        .rejectProperty(propertyId)
+        .send({ from: currentAccount });
+
+      setLoading(false);
+      return result;
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to reject property';
+      setError(errorMsg);
+      setLoading(false);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry, currentAccount]);
+
+
 
   // Map revenue department to employee
   const mapRevenueDeptToEmployee = useCallback(async (revenueDeptId, employeeAddress) => {
@@ -174,13 +203,39 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, currentAccount]);
 
+
+  const getPendingPropertiesForVerification = useCallback(async () => {
+    if(!contracts.propertyRegistry) {
+      throw new Error("PropertyRegistry contract not loaded");
+    }
+
+    try {
+      const properties = await contracts.propertyRegistry.methods
+        .getPendingPropertiesForVerification()
+        .call();
+
+      // If properties are just IDs, you may want to fetch details for each:
+      // Example: 
+      // return await Promise.all(properties.map(id => getPropertyDetails(id)));
+
+      return properties; // adapt as needed
+    } catch (err) {
+      const errorMsg = err.message || "Failed to get pending properties";
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry]);
+
+
   return {
     addLand,
     getPropertyDetails,
     getPropertiesOfOwner,
     getPropertiesByRevenueDept,
-    verifyProperty,
+    verifyPropertyRegistration,
+    rejectPropertyRegistration,
     mapRevenueDeptToEmployee,
+    getPendingPropertiesForVerification,
     loading,
     error,
   };

@@ -6,6 +6,7 @@ module.exports = async function (deployer, network, accounts) {
   console.log("List of available accounts:", accounts);
   console.log("Deploying from account:", accounts[0]);
 
+
   // Profiles for main admin and initial regional admin
   const mainAdminProfile = {
     firstName: "Shalini",
@@ -17,17 +18,20 @@ module.exports = async function (deployer, network, accounts) {
     aadharFileHash: ""
   };
 
+
   const initialRegionalAdminProfile = {
     firstName: "Regional",
     lastName: "Admin",
     dateOfBirth: "1980-01-01",
     aadharNumber: "1234-5678-9012",
-    resAddress: "Regional Admin Address",
+    resAddress: "",
     email: "regional.admin@example.com",
     aadharFileHash: ""
   };
 
+
   const initialRegionalAdminAddress = accounts[1];
+
 
   // Users to register & verify
   const extraUsers = [
@@ -53,6 +57,7 @@ module.exports = async function (deployer, network, accounts) {
     }
   ];
 
+
   // Deploy UserRegistry
   await deployer.deploy(
     UserRegistry,
@@ -62,6 +67,7 @@ module.exports = async function (deployer, network, accounts) {
   );
   const userRegistryInstance = await UserRegistry.deployed();
   console.log("UserRegistry deployed at:", userRegistryInstance.address);
+
 
   // Register extra users
   for (const u of extraUsers) {
@@ -78,21 +84,30 @@ module.exports = async function (deployer, network, accounts) {
     console.log(`User registered: ${u.firstName} ${u.lastName} [${u.account}]`);
   }
 
+
   // Verify users using initial regional admin address
   for (const u of extraUsers) {
     await userRegistryInstance.verifyUser(u.account, { from: initialRegionalAdminAddress });
     console.log(`User verified: ${u.account}`);
   }
 
+
   // Deploy PropertyRegistry and PropertyExchange
   await deployer.deploy(PropertyRegistry);
   const propertyRegistryInstance = await PropertyRegistry.deployed();
 
+  // Map revenue department(s) to the initial regional admin (example revenueDeptId: 1)
+  await propertyRegistryInstance.mapRevenueDeptIdToEmployee(1, initialRegionalAdminAddress, { from: accounts[0] });
+  console.log(`Mapped revenue department ID 1 to employee ${initialRegionalAdminAddress}`);
+
+
   await deployer.deploy(PropertyExchange, propertyRegistryInstance.address);
   console.log("PropertyRegistry deployed at:", propertyRegistryInstance.address);
 
+
   const propertyExchangeInstance = await PropertyExchange.deployed();
   console.log("PropertyExchange deployed at:", propertyExchangeInstance.address);
+
 
   console.log("\n=== Deployment Summary ===");
   console.log("UserRegistry:", userRegistryInstance.address);

@@ -151,7 +151,7 @@ const ManageAdmin = () => {
   if (web3Loading || loading || contractLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-        <Navbar userRole="Regional Admin" walletAdd={currentAccount} navItems={navItems} />
+        <Navbar userRole="Main Administrator" walletAdd={currentAccount} navItems={navItems} />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
             <Loader className="w-16 h-16 animate-spin text-orange-500 mx-auto mb-4" />
@@ -164,7 +164,7 @@ const ManageAdmin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
-      <Navbar userRole="Regional Admin" walletAdd={currentAccount} navItems={navItems} />
+      <Navbar userRole="Main Administrator" walletAdd={currentAccount} navItems={navItems} />
 
       <div className="max-w-7xl mx-auto px-8 py-12">
         {/* Header */}

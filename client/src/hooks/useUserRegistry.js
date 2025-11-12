@@ -37,6 +37,7 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry, currentAccount]);
 
+
   // Get user details
   const getUserDetails = useCallback(async (address) => {
     if (!contracts.userRegistry) {
@@ -105,8 +106,9 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry, currentAccount]);
 
+
   // Verify user (Regional Admin only)
-  const verifyUser = useCallback(async (userAddress) => {
+  const approveUserVerification = useCallback(async (userAddress) => {
     if (!contracts.userRegistry) {
       throw new Error('UserRegistry contract not loaded');
     }
@@ -127,6 +129,28 @@ export const useUserRegistry = () => {
       throw new Error(errorMsg);
     }
   }, [contracts.userRegistry, currentAccount]);
+
+  const rejectUserVerification = useCallback(async (userAddress) => {
+    if (!contracts.userRegistry) {
+      throw new Error('UserRegistry contract not loaded');
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await contracts.userRegistry.methods
+        .rejectUser(userAddress)
+        .send({ from: currentAccount });
+
+      setLoading(false);
+      return result;
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to reject user';
+      setError(errorMsg);
+      setLoading(false);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry, currentAccount]);
+
 
   // Add regional admin (Main Admin only)
   const addRegionalAdmin = useCallback(async (adminAddress) => {
@@ -151,6 +175,7 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry, currentAccount]);
 
+
   // Check if regional admin
   const isRegionalAdmin = useCallback(async (address) => {
     if (!contracts.userRegistry) {
@@ -169,6 +194,7 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry, currentAccount]);
 
+
   // GET ALL REGIONAL ADMINS (add this function!)
   const getAllRegionalAdmins = useCallback(async () => {
     if (!contracts.userRegistry)
@@ -182,15 +208,13 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry]);
 
-  // Add this to your useUserRegistry hook
+  // GET PENDING USER VERIFICATIONS (add this function!)
   const getPendingUserVerifications = useCallback(async () => {
     if (!contracts.userRegistry)
       throw new Error('UserRegistry contract not loaded');
     try {
-      // Call your new contract method to get pending user addresses
       const pendingAddresses = await contracts.userRegistry.methods.getPendingUserVerifications().call();
 
-      // Now loop and fetch details for those addresses (optional, if showing details)
       const pendingUsers = await Promise.all(
         pendingAddresses.map(async (addr) => {
           const details = await contracts.userRegistry.methods.getUserDetails(addr).call();
@@ -222,10 +246,10 @@ export const useUserRegistry = () => {
     getUserDetails,
     isUserRegistered,
     isUserVerified,
-    verifyUser,
+    approveUserVerification,
+    rejectUserVerification,
     addRegionalAdmin,
     isRegionalAdmin,
-    // ADD THIS EXPORT:
     getAllRegionalAdmins,
     getPendingUserVerifications,
     loading,

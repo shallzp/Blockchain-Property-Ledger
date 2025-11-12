@@ -3,31 +3,46 @@ import { useNavigate } from "react-router-dom";
 import { Home, Shield, Users, FileCheck, TrendingUp, Lock } from 'lucide-react';
 
 import { useWeb3 } from '../context/Web3Context';
+import { useUserRegistry } from '../hooks/useUserRegistry';
 
 const Landing = () => {
-  // Get Web3 context values
   const { isConnected, currentAccount, connectWallet } = useWeb3();
-  
-  // React Router navigation hook
+  const { getUserDetails } = useUserRegistry();
   const navigate = useNavigate();
 
-  // Format wallet address to show first 6 and last 4 characters
   const formatAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  
-  // Redirect to dashboard if wallet is connected
+
+  // Redirect to role-based dashboard when wallet is connected
   useEffect(() => {
-    if (isConnected) {
-      navigate("/user/dashboard");
-    }
-  }, [isConnected, navigate]);
+    const redirectBasedOnRole = async () => {
+      if (isConnected && currentAccount) {
+        try {
+          const userDetails = await getUserDetails(currentAccount);
+          
+          console.log("Landing user role:", userDetails.role);
+
+          if (userDetails.role === "Main Administrator") {
+            navigate("/main/dashboard");
+          } else if (userDetails.role === "Regional Admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/user/dashboard");
+          }
+        } catch (err) {
+          console.error('Failed to get user details in landing redirect:', err);
+          navigate("/user/dashboard");  // fallback to user dashboard
+        }
+      }
+    };
+
+    redirectBasedOnRole();
+  }, [isConnected, currentAccount, navigate]);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar - Fixed at top */}
+      {/* Navbar */}
       <nav className="top-0 left-0 right-0 z-50 px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          
-          {/* Logo Section */}
           <div className="flex items-center space-x-12">
             <div className="flex items-center space-x-2">
               <img src="./Logo.png" alt="PropChain Logo" className="w-8 h-8" />
@@ -35,7 +50,6 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* Connect Wallet Button */}
           <div className="flex items-center space-x-4">
             {isConnected ? (
               <div className="px-6 py-2.5 bg-green-500 text-white rounded-lg font-medium shadow-lg">
@@ -129,49 +143,42 @@ const Landing = () => {
               {
                 icon: Shield,
                 title: 'Immutable Records',
-                description: 'All property records are stored on the Ethereum blockchain, ensuring permanent and tamper-proof ownership history that cannot be altered or disputed.'
+                description: 'All property records are stored on the Ethereum blockchain, ensuring permanent and tamper-proof ownership history that cannot be altered or disputed.',
               },
               {
                 icon: Users,
                 title: 'Multi-Role Access',
-                description: 'Four distinct user roles including Super Admin, Local Admin, Land Owners, and Buyers ensure proper authorization and verification at every step.'
+                description: 'Four distinct user roles including Super Admin, Local Admin, Land Owners, and Buyers ensure proper authorization and verification at every step.',
               },
               {
                 icon: FileCheck,
                 title: 'Instant Verification',
-                description: 'KYC validation and document verification ensure only legitimate users can participate, while smart contracts enable instant ownership transfers.'
+                description: 'KYC validation and document verification ensure only legitimate users can participate, while smart contracts enable instant ownership transfers.',
               },
               {
                 icon: TrendingUp,
                 title: 'Transparent Trading',
-                description: 'Property owners can mark land for sale, receive purchase requests, and complete transactions with full transparency and secure escrow mechanisms.'
+                description: 'Property owners can mark land for sale, receive purchase requests, and complete transactions with full transparency and secure escrow mechanisms.',
               },
               {
                 icon: Lock,
                 title: 'Fraud Prevention',
-                description: 'Super Admin oversight with the ability to freeze suspicious transactions and audit complete ownership history prevents fraudulent activity.'
+                description: 'Super Admin oversight with the ability to freeze suspicious transactions and audit complete ownership history prevents fraudulent activity.',
               },
               {
                 icon: Home,
                 title: 'Public Registry',
-                description: 'All verified property listings are publicly accessible, allowing anyone to explore available properties and verify ownership claims transparently.'
+                description: 'All verified property listings are publicly accessible, allowing anyone to explore available properties and verify ownership claims transparently.',
               }
             ].map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <div 
-                  key={index}
-                  className="group p-8 rounded-2xl bg-gray-50 hover:bg-orange-50 transition border border-gray-100 hover:border-orange-200"
-                >
+                <div key={index} className="group p-8 rounded-2xl bg-gray-50 hover:bg-orange-50 transition border border-gray-100 hover:border-orange-200">
                   <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
                     <Icon className="w-7 h-7 text-orange-500 group-hover:text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </div>
               );
             })}

@@ -16494,12 +16494,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x6881e3FD691d6241152cF758cb47cDC4c5D6292e",
-      "transactionHash": "0xf89239fd467d6c29e1c3cf926ee17abc2d41c771293bee11d249ddaaf3f830ce"
+      "address": "0xc5c796Cd01891B0A52Ba6Cf368CE6F9b2698D549",
+      "transactionHash": "0xe3b9e790f26320ab8978b01d77f866c6dafed0e232953a76c23645273418c131"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-11-12T20:53:18.441Z",
+  "updatedAt": "2025-11-12T22:55:49.843Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

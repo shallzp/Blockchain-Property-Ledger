@@ -57,14 +57,11 @@ const ManageAdmin = () => {
         setLoading(true);
         try {
           const admins = await getAllRegionalAdmins();
-          // Adapt for your data shape: if returns pure address[], convert to object if needed
-          // Here we assume the contract returns address[] and you'll fetch more details per admin below if required.
-          // For richer response, you may want to fetch each admin's details and set array of { walletAddress, ... } objects.
+    
           setRegionalAdmins(
             admins.map(addr => ({
               walletAddress: addr,
-              // Make additional info available for UI:
-              verified: true, // If available, or fetch detail from getUserDetails
+              verified: true,
             }))
           );
         } catch (error) {
@@ -101,7 +98,7 @@ const ManageAdmin = () => {
     setProcessingUser(newAdminAddress);
     setProcessingAction('promote');
     try {
-      await addRegionalAdmin, (newAdminAddress, newRevenueDept);
+      await addRegionalAdmin(newAdminAddress, newRevenueDept);
       alert(`User ${newAdminAddress} promoted to Regional Admin with Revenue Dept ${newRevenueDept}`);
       setNewAdminAddress('');
       setNewRevenueDept('');
@@ -253,7 +250,7 @@ const ManageAdmin = () => {
 
       {/* Add Admin Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
             <button
               onClick={() => setShowAddModal(false)}

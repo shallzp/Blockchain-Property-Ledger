@@ -24,7 +24,7 @@ module.exports = async function (deployer, network, accounts) {
     lastName: "Admin",
     dateOfBirth: "1980-01-01",
     aadharNumber: "1234-5678-9012",
-    resAddress: "",
+    resAddress: "admin address",
     email: "regional.admin@example.com",
     aadharFileHash: ""
   };

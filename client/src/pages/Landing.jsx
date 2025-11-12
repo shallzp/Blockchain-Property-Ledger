@@ -10,16 +10,12 @@ const Landing = () => {
   const { getUserDetails } = useUserRegistry();
   const navigate = useNavigate();
 
-  const formatAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-
   // Redirect to role-based dashboard when wallet is connected
   useEffect(() => {
     const redirectBasedOnRole = async () => {
       if (isConnected && currentAccount) {
         try {
           const userDetails = await getUserDetails(currentAccount);
-          
-          console.log("Landing user role:", userDetails.role);
 
           if (userDetails.role === "Main Administrator") {
             navigate("/main/dashboard");
@@ -51,18 +47,12 @@ const Landing = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isConnected ? (
-              <div className="px-6 py-2.5 bg-green-500 text-white rounded-lg font-medium shadow-lg">
-                {formatAddress(currentAccount)}
-              </div>
-            ) : (
-              <button 
-                onClick={connectWallet}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition shadow-lg shadow-orange-500/30"
-              >
-                Connect Wallet
-              </button>
-            )}
+            <button 
+              onClick={connectWallet}
+              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition shadow-lg shadow-orange-500/30"
+            >
+              Connect Wallet
+            </button>
           </div>
         </div>
       </nav>

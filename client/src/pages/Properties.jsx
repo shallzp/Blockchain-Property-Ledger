@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, MapPin, Eye, DollarSign, CheckCircle, Clock, Plus, Search, FileText, Send } from 'lucide-react';
+import { Home, MapPin, Eye, DollarSign, CheckCircle, Clock, Plus, Search, Maximize } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
@@ -254,7 +254,8 @@ const Properties = () => {
                 key={property.propertyId}
                 className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition group"
               >
-                <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-4">
+
+                <div className="bg-gradient-to-r from-rose-300 to-orange-300 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-white font-bold text-lg">
                       Property #{property.propertyId}
@@ -263,7 +264,7 @@ const Properties = () => {
                       {stateNames[property.state]}
                     </span>
                   </div>
-                  <p className="text-orange-100 text-sm">Survey: {property.surveyNumber}</p>
+                  <p className="text-teal-50 text-sm">Survey: {property.surveyNumber}</p>
                 </div>
 
                 <div className="p-6">

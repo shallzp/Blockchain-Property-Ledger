@@ -203,6 +203,24 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, currentAccount]);
 
+  // Get employee by revenue department
+  const getEmployeeByRevenueDept = useCallback(async (revenueDeptId) => {
+    if (!contracts.propertyRegistry) {
+      throw new Error("PropertyRegistry contract not loaded");
+    }
+    try {
+      const employeeAddress = await contracts.propertyRegistry.methods
+        .getEmployeeByRevenueDept(revenueDeptId)
+        .call();
+      return employeeAddress;
+    } catch (err) {
+      const errorMsg = err.message || "Failed to fetch employee by revenue dept";
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry]);
+
+
 
   // Get all properties
   const getAllProperties = useCallback(async () => {
@@ -330,6 +348,7 @@ export const usePropertyRegistry = () => {
     verifyPropertyRegistration,
     rejectPropertyRegistration,
     mapRevenueDeptToEmployee,
+    getEmployeeByRevenueDept,
     getAllProperties,
     getPendingPropertiesForVerification,
     getVerifiedProperties,

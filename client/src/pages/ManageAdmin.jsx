@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
+import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 
 const ManageAdmin = () => {
   const navigate = useNavigate();
@@ -13,13 +14,12 @@ const ManageAdmin = () => {
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const {
     getAllRegionalAdmins,
-    addRegionalAdmin,
     removeRegionalAdmin,
     getUserDetails,
-    updateAdminRevenueDept,
-    getAdminCountByRevenueDept,
     loading: contractLoading,
   } = useUserRegistry();
+
+  const { getEmployeeByRevenueDept, updateAdminRevenueDept } = usePropertyRegistry();
 
   const [regionalAdmins, setRegionalAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const ManageAdmin = () => {
   const [newAdminAddress, setNewAdminAddress] = useState('');
   const [newRevenueDept, setNewRevenueDept] = useState('');
   const [revenueDeptId, setRevenueDeptId] = useState('');
-  const [employeesCount, setEmployeesCount] = useState(null);
+  const [employeeAddress, setEmployeeAddress] = useState('');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,7 +50,7 @@ const ManageAdmin = () => {
     if (!web3Loading) checkAuth();
   }, [isConnected, currentAccount, web3Loading, navigate, getUserDetails]);
 
-  // === Updated/Fixes: FETCH ADMINS ON LOAD ===
+  // fetch regional admins
   useEffect(() => {
     const fetchAdmins = async () => {
       if (isConnected) {
@@ -74,18 +74,18 @@ const ManageAdmin = () => {
     fetchAdmins();
   }, [isConnected, getAllRegionalAdmins]);
 
-  // Fetch number of employees in a revenue dept
-  const fetchEmployeesInDept = async () => {
+  // fetch employee by revenue dept
+  const fetchEmployeeByRevenueDept = async () => {
     if (!revenueDeptId) {
       alert('Please enter a Revenue Department ID');
       return;
     }
     try {
-      const count = await getAdminCountByRevenueDept(revenueDeptId);
-      setEmployeesCount(count);
+      const employee = await getEmployeeByRevenueDept(revenueDeptId);
+      setEmployeeAddress(employee);
     } catch (error) {
-      console.error('Failed to fetch employee count:', error);
-      alert('Failed to get employee count: ' + error.message);
+      console.error('Failed to fetch employee:', error);
+      alert('Failed to fetch employee by Revenue Dept: ' + error.message);
     }
   };
 
@@ -129,22 +129,6 @@ const ManageAdmin = () => {
     setProcessingAction('');
   };
 
-  const handleUpdateRevenueDept = async (walletAddress, newDeptId) => {
-    if (!newDeptId) {
-      alert('Please provide a valid Revenue Dept ID');
-      return;
-    }
-    try {
-      await updateAdminRevenueDept(walletAddress, newDeptId);
-      alert(`Updated Revenue Dept for admin ${walletAddress} to ${newDeptId}`);
-      const admins = await getAllRegionalAdmins();
-      setRegionalAdmins(admins.map(addr => ({ walletAddress: addr, verified: true })));
-    } catch (error) {
-      console.error('Update failed:', error);
-      alert('Failed to update Revenue Dept: ' + error.message);
-    }
-  };
-
   if (web3Loading || loading || contractLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
@@ -184,14 +168,16 @@ const ManageAdmin = () => {
               className="border rounded px-3 py-2"
             />
             <button
-              onClick={fetchEmployeesInDept}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2"
+              onClick={fetchEmployeeByRevenueDept}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2"
             >
-              Get Count
+              Get Employee Address
             </button>
           </div>
-          {employeesCount !== null && (
-            <p className="mt-4 text-gray-700">Number of employees in dept {revenueDeptId}: {employeesCount}</p>
+          {employeeAddress && (
+            <p className="mt-4 text-gray-700">
+              Employee Address: <span className="font-mono">{employeeAddress}</span>
+            </p>
           )}
         </section>
 
@@ -220,12 +206,6 @@ const ManageAdmin = () => {
                           <AlertCircle className="w-4 h-4" /> Pending Verification
                         </p>
                       )}
-                      <input
-                        type="text"
-                        placeholder="Update Revenue Dept ID"
-                        className="border rounded px-2 py-1 mt-2"
-                        onBlur={(e) => handleUpdateRevenueDept(admin.walletAddress, e.target.value)}
-                      />
                     </div>
                   </div>
                   <button

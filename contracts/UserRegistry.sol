@@ -183,6 +183,22 @@ contract UserRegistry {
         emit UserVerified(_adminAddress, Role.RegionalAdmin);
     }
 
+    // Remove Regional Admin: revert role to User and update mappings/counts accordingly
+    function removeRegionalAdmin(address _adminAddress) external onlyMainAdministrator {
+        require(registeredUsers[_adminAddress], "User not registered");
+        require(users[_adminAddress].role == Role.RegionalAdmin, "Not a regional admin");
+
+        users[_adminAddress].role = Role.User;
+        users[_adminAddress].verified = false; // Optionally revoke verification or keep true as needed
+
+        regionalAdmins[_adminAddress] = false;
+        countRegionalAdmins--;
+
+        // Emit an event if desired (not currently defined, but recommended for tracking)
+        // emit RegionalAdminRemoved(_adminAddress);
+    }
+
+
     // Regional Admin verifies Users
     function verifyUser(address _userAddress) external onlyRegionalAdmin {
         require(registeredUsers[_userAddress], "User not registered");

@@ -94,6 +94,11 @@ contract PropertyRegistry {
         revenueDeptIdToEmployee[revenueDeptId] = employeeAddress;
     }
 
+    // Get employee address mapped to a revenue department ID
+    function getEmployeeByRevenueDept(uint256 revenueDeptId) public view returns (address) {
+        return revenueDeptIdToEmployee[revenueDeptId];
+    }
+
     // Get revenue dept id of a property
     function getRevenueDeptId(uint256 propertyId) private view returns (uint256) {
         return propertiesContract.getLandDetailsAsStruct(propertyId).revenueDepartmentId;

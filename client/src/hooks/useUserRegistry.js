@@ -176,6 +176,30 @@ export const useUserRegistry = () => {
   }, [contracts.userRegistry, currentAccount]);
 
 
+  // Remove regional admin (revert role to user)
+  const removeRegionalAdmin = useCallback(async (adminAddress) => {
+    if (!contracts.userRegistry) {
+      throw new Error('UserRegistry contract not loaded');
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await contracts.userRegistry.methods
+        .removeRegionalAdmin(adminAddress)  // Ensure this method exists in your contract
+        .send({ from: currentAccount });
+
+      setLoading(false);
+      return result;
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to remove regional admin';
+      setError(errorMsg);
+      setLoading(false);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry, currentAccount]);
+
+
+
   // Check if regional admin
   const isRegionalAdmin = useCallback(async (address) => {
     if (!contracts.userRegistry) {
@@ -249,6 +273,7 @@ export const useUserRegistry = () => {
     approveUserVerification,
     rejectUserVerification,
     addRegionalAdmin,
+    removeRegionalAdmin,
     isRegionalAdmin,
     getAllRegionalAdmins,
     getPendingUserVerifications,

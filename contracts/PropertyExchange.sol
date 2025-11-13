@@ -15,7 +15,6 @@ contract PropertyExchange {
         address propertiesContractAddress = LandRegistryContract.getPropertiesContract();  
 
         propertiesContract = PropertyLedger(propertiesContractAddress);
-
         LandRegistryContract.setTransferOwnershipContractAddress(address(this));
     }    
 

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Mail, MapPin, Calendar, Edit2, Save, X, Shield, CheckCircle, AlertCircle, CreditCard, FileText } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
-import { useNavigate } from 'react-router-dom';
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Profile = () => {
   const navItems = useNavItems();
 
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
-  const { getUserDetails, isUserRegistered } = useUserRegistry();
+  const { getUserDetails, isUserRegistered, updateUserProfile } = useUserRegistry();
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -98,14 +99,12 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      // TODO: Update updatable fields (email, resAddress) on blockchain if contract supports it
-      // Note: Most fields are immutable in your current contract
-      console.log('Profile update requested:', {
+      await updateUserProfile({
+        lastName: profileData.lastName,
+        resAddress: profileData.resAddress,
         email: profileData.email,
-        resAddress: profileData.resAddress
       });
-      
-      alert('Note: Profile updates are not yet implemented in the smart contract. Email and address changes would require contract modification.');
+      alert('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -115,7 +114,6 @@ const Profile = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset to original data by re-fetching
     window.location.reload();
   };
 

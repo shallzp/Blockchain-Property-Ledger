@@ -6,27 +6,20 @@ import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
+import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
-
   const navItems = useNavItems();
-  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
-  const { 
-    getPendingUserVerifications, 
-    approveUserVerification, 
-    rejectUserVerification, 
-    loading: contractLoading 
-  } = useUserRegistry();
+  const { currentAccount, loading: web3Loading } = useWeb3();
+  const { getTotalUsers, getPendingUserVerifications, approveUserVerification, rejectUserVerification, loading: contractLoading } = useUserRegistry();
+  const { getTotalProperties, getOnSalePropertiesCount } = usePropertyRegistry();
+
 
   // Dynamic dashboard stats
   const [stats, setStats] = useState({
-    region: '',
     totalUsers: 0,
-    verifiedUsers: 0,
     pendingKYC: 0,
     totalProperties: 0,
-    verifiedProperties: 0,
     activeListings: 0
   });
 
@@ -42,24 +35,35 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // TODO: Replace with real contract/stat fetching as needed
-        // const adminStats = await getAdminStats();
-        // setStats(adminStats);
+        const [totalUsers, totalProps, activeListings] = await Promise.all([
+          getTotalUsers(),
+          getTotalProperties(),
+          getOnSalePropertiesCount(),
+        ]);
 
         const pending = await getPendingUserVerifications();
         setPendingKYC(pending);
         setStats(prev => ({
           ...prev,
-          pendingKYC: pending.length
+          totalUsers: Number(totalUsers),
+          pendingKYC: pending.length,
+          totalProperties: Number(totalProps),
+          activeListings: Number(activeListings),
         }));
       } catch (err) {
+        setStats({
+          totalUsers: 0,
+          pendingKYC: 0,
+          totalProperties: 0,
+          activeListings: 0,
+        });
         setPendingKYC([]);
-        setError('Failed to load KYC stats');
+        console.error('Error fetching dashboard data:', err);
       }
       setLoading(false);
     };
     fetchDashboardData();
-  }, [getPendingUserVerifications]);
+  }, [getTotalUsers, getPendingUserVerifications, getTotalProperties, getOnSalePropertiesCount]);
 
   // Approve/Reject KYC
   const handleApproveKYC = async (walletAddress) => {

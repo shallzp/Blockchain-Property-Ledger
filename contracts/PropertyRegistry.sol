@@ -104,6 +104,10 @@ contract PropertyRegistry {
         return propertiesContract.getLandDetailsAsStruct(propertyId).revenueDepartmentId;
     }
 
+    //Get total properties count
+    function getTotalProperties() public view returns (uint256) {
+        return allProperties.length;
+    }
 
     //Get all properties
     function getAllProperties() public view returns (PropertyLedger.Land[] memory) {
@@ -187,6 +191,18 @@ contract PropertyRegistry {
             }
         }
         return onSale;
+    }
+    
+    // Get the count of all on sale properties
+    function getOnSalePropertiesCount() public view returns (uint256) {
+        uint count = 0;
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.OnSale) {
+                count++;
+            }
+        }
+        return count;
     }
 
 

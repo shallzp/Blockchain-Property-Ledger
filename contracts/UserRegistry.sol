@@ -169,6 +169,21 @@ contract UserRegistry {
         emit UserRegistered(msg.sender, Role.User, block.timestamp);
     }
 
+    // Update User Profile
+    function updateUserProfile(
+        string memory _lastName,
+        string memory _resAddress,
+        string memory _email
+    ) public {
+        require(registeredUsers[msg.sender], "User not registered");
+        User storage user = users[msg.sender];
+
+        user.lastName = _lastName;
+        user.resAddress = _resAddress;
+        user.email = _email;
+    }
+
+
     // Main Admin adds Regional Admin
     function addRegionalAdmin(address _adminAddress) external onlyMainAdministrator {
         require(registeredUsers[_adminAddress], "User not registered");
@@ -291,4 +306,13 @@ contract UserRegistry {
         }
         return pending;
     }
+
+    function getTotalUsers() public view returns (uint256) {
+        return allUsers.length;
+    }
+
+    function getRegionalAdminCount() public view returns (uint256) {
+        return countRegionalAdmins;
+    }
+
 }

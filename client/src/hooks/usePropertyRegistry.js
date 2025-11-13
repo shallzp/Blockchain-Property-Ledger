@@ -220,7 +220,19 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry]);
 
-
+  // Get total properties count
+  const getTotalProperties = useCallback(async () => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+    try {
+      return await contracts.propertyRegistry.methods.getTotalProperties().call();
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch total properties';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry]);
 
   // Get all properties
   const getAllProperties = useCallback(async () => {
@@ -339,6 +351,20 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry, web3]);
 
+  // Get count of on sale properties
+  const getOnSalePropertiesCount = useCallback(async () => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+    try {
+      return await contracts.propertyRegistry.methods.getOnSalePropertiesCount().call();
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch on sale properties count';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry]);
+
 
   return {
     addLand,
@@ -349,10 +375,12 @@ export const usePropertyRegistry = () => {
     rejectPropertyRegistration,
     mapRevenueDeptToEmployee,
     getEmployeeByRevenueDept,
+    getTotalProperties,
     getAllProperties,
     getPendingPropertiesForVerification,
     getVerifiedProperties,
     getOnSaleProperties,
+    getOnSalePropertiesCount,
     loading,
     error,
   };

@@ -38,6 +38,34 @@ export const useUserRegistry = () => {
   }, [contracts.userRegistry, currentAccount]);
 
 
+  // Update user profile
+  const updateUserProfile = useCallback(async (profileData) => {
+    if (!contracts.userRegistry) {
+      throw new Error('UserRegistry contract not loaded');
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await contracts.userRegistry.methods
+        .updateUserProfile(
+          profileData.lastName,
+          profileData.resAddress,
+          profileData.email
+        )
+        .send({ from: currentAccount });
+
+      setLoading(false);
+      return result;
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to update user profile';
+      setError(errorMsg);
+      setLoading(false);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry, currentAccount]);
+
+
   // Get user details
   const getUserDetails = useCallback(async (address) => {
     if (!contracts.userRegistry) {
@@ -263,10 +291,39 @@ export const useUserRegistry = () => {
     }
   }, [contracts.userRegistry]);
 
+  // Get total registered users
+  const getTotalUsers = useCallback(async () => {
+    if (!contracts.userRegistry) {
+      throw new Error('UserRegistry contract not loaded');
+    }
+    try {
+      return await contracts.userRegistry.methods.getTotalUsers().call();
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch total users';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry]);
+
+  // Get count of regional admins
+  const getRegionalAdminCount = useCallback(async () => {
+    if (!contracts.userRegistry) {
+      throw new Error('UserRegistry contract not loaded');
+    }
+    try {
+      return await contracts.userRegistry.methods.getRegionalAdminCount().call();
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to fetch regional admin count';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.userRegistry]);
+
 
   return {
     contracts,
     registerUser,
+    updateUserProfile,
     getUserDetails,
     isUserRegistered,
     isUserVerified,
@@ -277,6 +334,7 @@ export const useUserRegistry = () => {
     isRegionalAdmin,
     getAllRegionalAdmins,
     getPendingUserVerifications,
+    getTotalUsers,
     loading,
     error,
   };

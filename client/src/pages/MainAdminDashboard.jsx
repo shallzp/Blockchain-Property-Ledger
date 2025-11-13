@@ -1,28 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Users, Shield, Home, FileText, Eye, CheckCircle, XCircle, Pause, Play, History, MapPin, ChevronRight, Bell, Plus } from 'lucide-react';
+import { Users, Shield, Home, ChevronRight, Plus, CheckCircle } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
-// import your main admin contract hooks here
+import { useUserRegistry } from '../hooks/useUserRegistry';
+import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 
 const MainAdminDashboard = () => {
   const navItems = useNavItems();
   const navigate = useNavigate();
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
+  const { getTotalUsers, getRegionalAdminCount, getAllRegionalAdmins } = useUserRegistry();
+  const { getTotalProperties } = usePropertyRegistry();
 
-  // Data model: replace with real contract fetches
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalProperties: 0,
     localAdmins: 0,
-    activeAdmins: 0,
-    pendingAdmins: 0,
-    totalTransactions: 0,
   });
-  const [pendingAdmins, setPendingAdmins] = useState([]);
   const [localAdmins, setLocalAdmins] = useState([]);
 
   useEffect(() => {
@@ -33,26 +31,34 @@ const MainAdminDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // load admin stats and lists, replace with real contract/API calls
-        // setStats(await getMainAdminStats());
-        // setPendingAdmins(await getPendingAdminRequests());
-        // setLocalAdmins(await getLocalAdmins());
+        const [totalUsers, regionalAdminCount, totalProps, admins] = await Promise.all([
+          getTotalUsers(),
+          getRegionalAdminCount(),
+          getTotalProperties(),
+          getAllRegionalAdmins(),
+        ]);
+        setStats(prev => ({
+          ...prev,
+          totalUsers: Number(totalUsers),
+          localAdmins: Number(regionalAdminCount),
+          totalProperties: Number(totalProps),
+        }));
+        setLocalAdmins(admins.map(addr => ({ wallet: addr, name: addr.slice(0, 6) + '...' /* placeholder */, region: 'N/A' })));
       } catch (e) {
         setStats({
           totalUsers: 0,
           totalProperties: 0,
           localAdmins: 0,
           activeAdmins: 0,
-          pendingAdmins: 0,
+    
           totalTransactions: 0,
         });
-        setPendingAdmins([]);
         setLocalAdmins([]);
       }
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [getTotalUsers, getRegionalAdminCount, getTotalProperties, getAllRegionalAdmins]);
 
   if (web3Loading || loading) {
     return (
@@ -115,7 +121,7 @@ const MainAdminDashboard = () => {
               <div className="flex items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-800 flex-1">Regional Admins</h2>
                 <button
-                  onClick={() => navigate('/add-admin')}
+                  onClick={() => navigate('/main/manage-admin')}
                   className="px-4 py-2 bg-orange-500 text-white rounded-lg flex items-center gap-2 text-sm hover:bg-orange-600 transition"
                 >
                   <Plus className="w-4 h-4" /> Add Admin
@@ -124,23 +130,20 @@ const MainAdminDashboard = () => {
               {localAdmins.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">No regional admins yet.</div>
               ) : (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="space-y-7">
                   {localAdmins.map((admin, idx) => (
-                    <div key={admin.wallet || idx} className="bg-blue-50 border border-blue-200 rounded-xl p-6 hover:border-blue-400 transition">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                          {admin.name?.split(" ").map(n=>n[0]).join("")}
-                        </div>
-                        <span className="text-sm font-medium text-gray-600">{admin.region}</span>
-                        <button
-                          onClick={() => navigate(`/profile/${admin.wallet}`)}
-                          className="ml-auto p-2 hover:bg-blue-50 rounded-full transition"
-                        >
-                          <ChevronRight className="w-5 h-5 text-gray-400" />
-                        </button>
+                    <div key={admin.wallet || idx} className="flex items-center bg-slate-50 rounded-2xl shadow border border-gray-100 p-8 mb-2">
+                      <div className="flex-shrink-0 mr-5">
+                        <Shield className="w-10 h-10 text-purple-500" />
                       </div>
-                      <h3 className="text-lg font-bold text-gray-800 mb-1">{admin.name}</h3>
-                      <p className="text-xs text-gray-500">{admin.wallet}</p>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Regional Admin</h3>
+                        <p className="font-mono text-base text-gray-800 break-all">{admin.wallet}</p>
+                        <div className="flex items-center mt-2">
+                          <CheckCircle className="w-5 h-5 text-green-500 mr-1" />
+                          <span className="text-green-600 font-medium text-base">Verified</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

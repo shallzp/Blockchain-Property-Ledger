@@ -204,6 +204,38 @@ export const usePropertyRegistry = () => {
   }, [contracts.propertyRegistry, currentAccount]);
 
 
+  // Get all properties
+  const getAllProperties = useCallback(async () => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+
+    try {
+      const properties = await contracts.propertyRegistry.methods
+        .getAllProperties()
+        .call();
+
+      return properties.map((prop) => ({
+        propertyId: parseInt(prop.propertyId),
+        owner: prop.owner,
+        admin: prop.admin,
+        revenueDepartmentId: parseInt(prop.revenueDepartmentId),
+        locationId: parseInt(prop.locationId),
+        surveyNumber: parseInt(prop.surveyNumber),
+        index: parseInt(prop.index),
+        area: parseInt(prop.area),
+        marketValue: web3.utils.fromWei(prop.marketValue.toString(), 'ether'),
+        noOfRequests: parseInt(prop.noOfRequests),
+        state: parseInt(prop.state),
+      }));
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to get all properties';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry, web3]);
+
+  // Get pending properties for verification
   const getPendingPropertiesForVerification = useCallback(async () => {
     if(!contracts.propertyRegistry) {
       throw new Error("PropertyRegistry contract not loaded");
@@ -226,6 +258,69 @@ export const usePropertyRegistry = () => {
     }
   }, [contracts.propertyRegistry]);
 
+  // Get all verified properties
+  const getVerifiedProperties = useCallback(async () => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+
+    try {
+      const properties = await contracts.propertyRegistry.methods
+        .getVerifiedProperties()
+        .call();
+
+      // Map raw contract properties to JS objects, assuming same structure as others
+      return properties.map((prop) => ({
+        propertyId: parseInt(prop.propertyId),
+        owner: prop.owner,
+        admin: prop.admin,
+        revenueDepartmentId: parseInt(prop.revenueDepartmentId),
+        locationId: parseInt(prop.locationId),
+        surveyNumber: parseInt(prop.surveyNumber),
+        index: parseInt(prop.index),
+        area: parseInt(prop.area),
+        marketValue: web3.utils.fromWei(prop.marketValue.toString(), 'ether'),
+        noOfRequests: parseInt(prop.noOfRequests),
+        state: parseInt(prop.state),
+      }));
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to get verified properties';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry, web3]);
+
+  // Get on sale properties
+  const getOnSaleProperties = useCallback(async () => {
+    if (!contracts.propertyRegistry) {
+      throw new Error('PropertyRegistry contract not loaded');
+    }
+
+    try {
+      const properties = await contracts.propertyRegistry.methods
+        .getOnSaleProperties()
+        .call();
+
+      return properties.map((prop) => ({
+        propertyId: parseInt(prop.propertyId),
+        owner: prop.owner,
+        admin: prop.admin,
+        revenueDepartmentId: parseInt(prop.revenueDepartmentId),
+        locationId: parseInt(prop.locationId),
+        surveyNumber: parseInt(prop.surveyNumber),
+        index: parseInt(prop.index),
+        area: parseInt(prop.area),
+        marketValue: web3.utils.fromWei(prop.marketValue.toString(), 'ether'),
+        noOfRequests: parseInt(prop.noOfRequests),
+        state: parseInt(prop.state),
+      }));
+    } catch (err) {
+      const errorMsg = err.message || 'Failed to get on sale properties';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyRegistry, web3]);
+
 
   return {
     addLand,
@@ -235,7 +330,10 @@ export const usePropertyRegistry = () => {
     verifyPropertyRegistration,
     rejectPropertyRegistration,
     mapRevenueDeptToEmployee,
+    getAllProperties,
     getPendingPropertiesForVerification,
+    getVerifiedProperties,
+    getOnSaleProperties,
     loading,
     error,
   };

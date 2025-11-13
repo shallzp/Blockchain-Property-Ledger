@@ -8,7 +8,6 @@ import { useWeb3 } from '../context/Web3Context';
 import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 import { usePropertyExchange } from '../hooks/usePropertyExchange';
 
-
 const Properties = () => {
   const navigate = useNavigate();
 
@@ -16,13 +15,13 @@ const Properties = () => {
 
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getPropertiesOfOwner } = usePropertyRegistry();
-  const { getMySales, addPropertyOnSale } = usePropertyExchange();
+  const { getMySales, addPropertyOnSale, cancelSale } = usePropertyExchange();
 
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'verified', 'pending', 'onSale'
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -38,14 +37,12 @@ const Properties = () => {
     5: 'bg-pink-100 text-pink-700'
   };
 
-  // Redirect if wallet not connected
   useEffect(() => {
     if (!web3Loading && !isConnected) {
       navigate('/');
     }
   }, [isConnected, web3Loading, navigate]);
 
-  // Fetch properties and sales
   useEffect(() => {
     const fetchProperties = async () => {
       if (isConnected && currentAccount) {
@@ -57,7 +54,6 @@ const Properties = () => {
 
           const userSales = await getMySales(currentAccount);
           setSales(userSales);
-
         } catch (error) {
           console.error('Error fetching properties:', error);
         } finally {
@@ -68,7 +64,6 @@ const Properties = () => {
     fetchProperties();
   }, [isConnected, currentAccount, getPropertiesOfOwner, getMySales]);
 
-  // Filter properties according to tab and search
   useEffect(() => {
     let filtered = [...properties];
 
@@ -109,6 +104,27 @@ const Properties = () => {
     } catch (error) {
       console.error('Error listing property:', error);
       alert('Failed to list property: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveFromSale = async (property) => {
+    try {
+      setLoading(true);
+      const sale = sales.find(s => s.propertyId === property.propertyId && s.state === 0);
+      if (!sale) {
+        alert('No active sale found for this property.');
+        setLoading(false);
+        return;
+      }
+      await cancelSale(sale.saleId);
+      alert('Property removed from sale!');
+      const userProperties = await getPropertiesOfOwner(currentAccount);
+      setProperties(userProperties);
+    } catch (error) {
+      console.error('Error removing property from sale:', error);
+      alert('Failed to remove property from sale: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -238,7 +254,7 @@ const Properties = () => {
             <p className="text-gray-600 mb-6">
               {searchQuery
                 ? 'No properties match your search criteria'
-                : 'You haven\'t registered any properties yet'}
+                : "You haven't registered any properties yet"}
             </p>
             <button
               onClick={() => navigate('/add-property')}
@@ -254,7 +270,6 @@ const Properties = () => {
                 key={property.propertyId}
                 className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition group"
               >
-
                 <div className="bg-gradient-to-r from-rose-300 to-orange-300 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-white font-bold text-lg">
@@ -302,14 +317,6 @@ const Properties = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => navigate(`/property/${property.propertyId}`)}
-                      className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm font-medium"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View
-                    </button>
-
                     {property.state === 1 && (
                       <button
                         onClick={() => {
@@ -324,13 +331,41 @@ const Properties = () => {
                     )}
 
                     {property.state >= 2 && (
-                      <button
-                        onClick={() => navigate(`/requests?propertyId=${property.propertyId}`)}
-                        className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm font-medium"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Requests
-                      </button>
+                      <>
+                        <button
+                          onClick={() => navigate(`/requests?propertyId=${property.propertyId}`)}
+                          className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm font-medium"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Requests
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              setLoading(true);
+                              const sale = sales.find(s => s.propertyId === property.propertyId && s.state === 0);
+                              if (!sale) {
+                                alert('No active sale found for this property.');
+                                setLoading(false);
+                                return;
+                              }
+                              await cancelSale(sale.saleId);
+                              alert('Property removed from sale!');
+                              const userProperties = await getPropertiesOfOwner(currentAccount);
+                              setProperties(userProperties);
+                            } catch (error) {
+                              console.error('Error removing property from sale:', error);
+                              alert('Failed to remove property from sale: ' + error.message);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2 text-sm font-medium"
+                        >
+                          <DollarSign className="w-4 h-4" />
+                          Remove from Sale
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -338,8 +373,6 @@ const Properties = () => {
             ))}
           </div>
         )}
-
-        {/* Modal for listing property for sale */}
         {showSaleModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">

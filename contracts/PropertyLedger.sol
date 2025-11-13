@@ -101,21 +101,32 @@ contract PropertyLedger {
     }
 
     // Put on Sale
-    // changeStateToOnSale + changeStateBackToVerified
+    // changeStateToOnSale
     function putOnSale(uint256 _propertyId, address _owner, uint256 _price, bool _cancel) public {
-    require(lands[_propertyId].propertyId != 0, "Land does not exist");
-    require(lands[_propertyId].owner == _owner, "Only owner can modify sale status");
+        require(lands[_propertyId].propertyId != 0, "Land does not exist");
+        require(lands[_propertyId].owner == _owner, "Only owner can modify sale status");
 
-    if (_cancel) {
-        // Cancel sale: revert state to Verified
-        lands[_propertyId].state = StateOfProperty.Verified;
-        lands[_propertyId].marketValue = 0;
-    } else {
-        // Put property on sale
-        lands[_propertyId].marketValue = _price;
-        lands[_propertyId].state = StateOfProperty.OnSale;
+        if (_cancel) {
+            // Cancel sale: revert state to Verified
+            lands[_propertyId].state = StateOfProperty.Verified;
+            lands[_propertyId].marketValue = 0;
+        } else {
+            // Put property on sale
+            lands[_propertyId].marketValue = _price;
+            lands[_propertyId].state = StateOfProperty.OnSale;
+        }
     }
-}
+
+    // Cancel sale by owner and revert to Verified state
+    function cancelSale(uint256 _propertyId, address _owner) public {
+        require(lands[_propertyId].propertyId != 0, "Land does not exist");
+        require(lands[_propertyId].owner == _owner, "Only owner can cancel sale");
+        require(lands[_propertyId].state == StateOfProperty.OnSale, "Property is not currently on sale");
+
+        lands[_propertyId].state = StateOfProperty.Verified;
+        lands[_propertyId].marketValue = 0;  // Reset market value to zero
+    }
+
 
 
     // Request to Buy

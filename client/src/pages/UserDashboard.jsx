@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Home, Search, MapPin, Bed, Bath, Maximize, ChevronRight, Calendar, Star, User, FileText, Send, Eye } from 'lucide-react';
+import { Home, Search, MapPin, Bed, Bath, Maximize, ChevronRight, Calendar, FileText, Send, Eye } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';

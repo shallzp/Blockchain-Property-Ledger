@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, Clock, CheckCircle, Home, MapPin, User, Search, Send, X, DollarSign, Maximize, TrendingUp } from 'lucide-react';
+import { CheckCircle, Home, MapPin, Search, Send, X, Maximize, TrendingUp } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
+
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { usePropertyExchange } from '../hooks/usePropertyExchange';
@@ -10,24 +11,18 @@ import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 
 const Explore = () => {
   const navigate = useNavigate();
-
   const navItems = useNavItems();
-
   const location = useLocation();
-  const passedFilters = location.state?.filters;
 
-  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
-
-  // Move hook usages to top as per React rules
-  const { getSalesByLocation, sendPurchaseRequest } = usePropertyExchange();
-  const { getPropertyDetails } = usePropertyRegistry();
+  const { isConnected, currentAccount, loading: web3Loading, web3 } = useWeb3();
+  const { sendPurchaseRequest } = usePropertyExchange();
+  const { getAllProperties, getVerifiedProperties, getOnSaleProperties } = usePropertyRegistry();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState('all');
-  const [propertyType, setPropertyType] = useState(passedFilters?.type || 'all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [sortBy, setSortBy] = useState('latest');
-  const [stateFilter, setStateFilter] = useState('onSale'); // 'all', 'onSale', 'verified'
+  const [stateFilter, setStateFilter] = useState('all'); // 'all', 'onSale', 'verified'
 
   const [availableProperties, setAvailableProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,57 +38,38 @@ const Explore = () => {
     }
   }, [isConnected, web3Loading, navigate]);
 
-  // Fetch all properties on sale
+  // Fetch all verified properties
   useEffect(() => {
     const fetchProperties = async () => {
       if (isConnected && currentAccount) {
         try {
           setLoading(true);
-
-          const locationIds = [101, 102, 103, 104, 105]; // Example location IDs
-          const allProperties = [];
-
-          for (const locationId of locationIds) {
-            try {
-              const salesByLocation = await getSalesByLocation(locationId);
-
-              for (const sale of salesByLocation) {
-                try {
-                  const propertyDetails = await getPropertyDetails(sale.propertyId);
-
-                  // Only include properties on sale and not owned by current user
-                  if (sale.state === 0 && propertyDetails.owner.toLowerCase() !== currentAccount.toLowerCase()) {
-                    allProperties.push({
-                      id: sale.saleId,
-                      propertyId: sale.propertyId,
-                      title: `Property #${sale.propertyId}`,
-                      owner: propertyDetails.owner,
-                      ownerWallet: propertyDetails.owner,
-                      surveyNo: propertyDetails.surveyNumber,
-                      location: `Location ${propertyDetails.locationId}`,
-                      locationId: propertyDetails.locationId,
-                      area: `${propertyDetails.area} sq ft`,
-                      areaValue: propertyDetails.area,
-                      price: sale.price,
-                      priceETH: parseFloat(sale.price),
-                      status: stateNames[propertyDetails.state],
-                      stateValue: propertyDetails.state,
-                      listedDate: new Date().toLocaleDateString(), // Placeholder, fetch real date from events if possible
-                      views: Math.floor(Math.random() * 300), // Placeholder for popularity
-                      type: 'Property', // TODO: Add type in contract for better filtering
-                      revenueDeptId: propertyDetails.revenueDepartmentId,
-                      saleDetails: sale,
-                      propertyDetails: propertyDetails
-                    });
-                  }
-                } catch (err) {
-                  console.error('Error fetching property details:', err);
-                }
-              }
-            } catch (err) {
-              console.error('Error fetching sales for location:', locationId, err);
-            }
+          let props = [];
+          if (stateFilter === 'all') {
+            props = await getAllProperties();
+          } else if (stateFilter === 'onSale') {
+            props = await getOnSaleProperties();
+          } else if (stateFilter === 'verified') {
+            props = await getVerifiedProperties();
           }
+
+          // Map to UI model as before
+          const allProperties = props.map((property) => ({
+            id: property.propertyId,
+            propertyId: property.propertyId,
+            title: `Property #${property.propertyId}`,
+            ownerWallet: property.owner,
+            surveyNo: property.surveyNumber,
+            location: `Location ${property.locationId}`,
+            area: `${property.area} sq ft`,
+            price: property.marketValue,
+            priceETH: parseFloat(property.marketValue),
+            status: stateNames[property.state],
+            stateValue: property.state,
+            type: 'Property',
+            revenueDeptId: property.revenueDepartmentId,
+            propertyDetails: property
+          }));
 
           setAvailableProperties(allProperties);
         } catch (error) {
@@ -105,7 +81,9 @@ const Explore = () => {
     };
 
     fetchProperties();
-  }, [isConnected, currentAccount, getSalesByLocation, getPropertyDetails]);
+  }, [isConnected, currentAccount, stateFilter,
+      getAllProperties, getOnSaleProperties, getVerifiedProperties]);
+
 
   // Filter properties
   const filteredProperties = availableProperties.filter(property => {
@@ -139,7 +117,6 @@ const Explore = () => {
     if (sortBy === 'latest') return new Date(b.listedDate) - new Date(a.listedDate);
     if (sortBy === 'priceLow') return a.priceETH - b.priceETH;
     if (sortBy === 'priceHigh') return b.priceETH - a.priceETH;
-    if (sortBy === 'popular') return b.views - a.views;
     if (sortBy === 'area') return b.areaValue - a.areaValue;
     return 0;
   });
@@ -147,7 +124,6 @@ const Explore = () => {
   // Clear all filters helper
   const clearFilters = () => {
     setSearchQuery('');
-    setPropertyType('all');
     setPriceRange('all');
     setLocationFilter('all');
     setStateFilter('onSale');
@@ -160,28 +136,30 @@ const Explore = () => {
     setShowOfferModal(true);
   };
 
-  // Submit purchase offer
+  // Called when user clicks "Send Offer"
   const submitOffer = async () => {
-    if (!selectedProperty || !offerPrice) {
-      alert('Please enter an offer price');
+    if (!selectedProperty) {
+      alert("Please select a property to make an offer");
       return;
     }
-
+    const offerPriceValue = parseFloat(offerPrice);
+    if (!offerPrice || isNaN(offerPriceValue) || offerPriceValue <= 0) {
+      alert("Please enter a valid positive offer price");
+      return;
+    }
+    console.log("Submitting offer for saleId:", selectedProperty.id, "with offerPrice (ETH):", offerPriceValue);
     try {
-      setLoading(true);
-      await sendPurchaseRequest(selectedProperty.id, offerPrice);
-      alert('Purchase request sent successfully!');
-      setShowOfferModal(false);
-      setOfferPrice('');
+      await sendPurchaseRequest(selectedProperty.id, offerPriceValue);
+      alert("Purchase request sent successfully!");
       setSelectedProperty(null);
-      // Optionally refresh property list here
+      setOfferPrice("");
+      // Optionally close modal etc...
     } catch (error) {
-      console.error('Error sending offer:', error);
-      alert('Failed to send offer: ' + error.message);
-    } finally {
-      setLoading(false);
+      console.error("Error sending offer:", error);
+      alert("Failed to send offer: " + error.message);
     }
   };
+
 
   if (web3Loading || loading) {
     return (
@@ -251,7 +229,7 @@ const Explore = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by ID, Survey #, Location, or Owner..."
+                placeholder="Search by Location, Owner or Survey Number"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none"
@@ -309,7 +287,6 @@ const Explore = () => {
                 <option value="priceLow">Price: Low to High</option>
                 <option value="priceHigh">Price: High to Low</option>
                 <option value="area">Largest Area</option>
-                <option value="popular">Most Popular</option>
               </select>
             </div>
 
@@ -329,7 +306,7 @@ const Explore = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedProperties.map(property => (
             <div key={property.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition group">
-              <div className="relative bg-gradient-to-r from-orange-400 to-orange-500 p-6">
+              <div className="relative bg-gradient-to-r from-rose-300 to-orange-300 p-6">
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg text-xs font-bold mb-2 inline-block">
@@ -369,28 +346,23 @@ const Explore = () => {
                   <p className="text-xs text-gray-500 mb-2">Owner</p>
                   <p className="text-xs font-mono text-gray-600 break-all">{property.ownerWallet}</p>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-3 h-3" />
-                    <span>{property.views} views</span>
-                  </div>
-                  <span>Listed: {property.listedDate}</span>
-                </div>
                 <div className="flex gap-2">
-                  <button
+                  {/* <button
                     onClick={() => navigate(`/property/${property.propertyId}`)}
                     className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
                     Details
-                  </button>
-                  <button
-                    onClick={() => handleSendOffer(property)}
-                    className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition flex items-center justify-center gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Make Offer
-                  </button>
+                  </button> */}
+                  {property.stateValue === 2 && ( // 2 means OnSale
+                    <button
+                      onClick={() => handleSendOffer(property)}
+                      className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      Make Offer
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -398,21 +370,15 @@ const Explore = () => {
         </div>
 
         {/* Empty State */}
-        {sortedProperties.length === 0 && (
+        {availableProperties.length === 0 && (
           <div className="bg-white rounded-2xl shadow-lg border-2 border-dashed border-gray-300 p-12 text-center">
             <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-900 mb-2">No Properties Found</h3>
             <p className="text-gray-600 mb-6">
               {searchQuery
                 ? 'No properties match your search criteria'
-                : 'No properties available for sale at the moment'}
+                : 'No properties available at the moment'}
             </p>
-            <button
-              onClick={clearFilters}
-              className="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition"
-            >
-              Clear All Filters
-            </button>
           </div>
         )}
       </div>

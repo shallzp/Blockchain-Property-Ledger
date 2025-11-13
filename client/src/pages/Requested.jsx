@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Clock, CheckCircle, XCircle, Eye, Home, MapPin, User, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { Send, Clock, CheckCircle, XCircle, Eye, Home, MapPin, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';

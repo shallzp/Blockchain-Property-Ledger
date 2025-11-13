@@ -22,12 +22,13 @@ export const usePropertyExchange = () => {
       setLoading(false);
       return result;
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to add property on sale';
       setError(errorMsg);
       setLoading(false);
       throw new Error(errorMsg);
     }
-  }, [contracts.propertyExchange, currentAccount]);
+  }, [contracts.propertyExchange, currentAccount, web3]);
 
   // Get my sales
   const getMySales = useCallback(async (ownerAddress) => {
@@ -55,6 +56,7 @@ export const usePropertyExchange = () => {
         deadlineForPayment: parseInt(sale.deadlineForPayment),
       }));
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to get sales';
       setError(errorMsg);
       throw new Error(errorMsg);
@@ -86,6 +88,7 @@ export const usePropertyExchange = () => {
         deadlineForPayment: parseInt(sale.deadlineForPayment),
       }));
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to get requested sales';
       setError(errorMsg);
       throw new Error(errorMsg);
@@ -94,26 +97,29 @@ export const usePropertyExchange = () => {
 
   // Send purchase request
   const sendPurchaseRequest = useCallback(async (saleId, offerPriceInEther) => {
-    if (!contracts.propertyExchange) {
-      throw new Error('PropertyExchange contract not loaded');
-    }
-
+    if (!contracts.propertyExchange) throw new Error("PropertyExchange contract not loaded");
+    if (!saleId || !offerPriceInEther) throw new Error("Invalid saleId or offerPrice");
     setLoading(true);
     setError(null);
     try {
+      // Pass gas limit explicitly to avoid gas estimation issues
       const result = await contracts.propertyExchange.methods
         .sendPurchaseRequest(saleId, offerPriceInEther)
-        .send({ from: currentAccount });
-
+        .send({ 
+          from: currentAccount,
+          gas: 300000
+        });
       setLoading(false);
       return result;
     } catch (err) {
-      const errorMsg = err.message || 'Failed to send purchase request';
+      console.error("sendPurchaseRequest error:", err);
+      const errorMsg = err.message || "Failed to send purchase request";
       setError(errorMsg);
       setLoading(false);
       throw new Error(errorMsg);
     }
   }, [contracts.propertyExchange, currentAccount]);
+
 
   // Accept buyer request
   const acceptBuyerRequest = useCallback(async (saleId, buyerAddress, priceInEther) => {
@@ -131,12 +137,13 @@ export const usePropertyExchange = () => {
       setLoading(false);
       return result;
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to accept buyer request';
       setError(errorMsg);
       setLoading(false);
       throw new Error(errorMsg);
     }
-  }, [contracts.propertyExchange, currentAccount]);
+  }, [contracts.propertyExchange, currentAccount, web3]);
 
   // Transfer ownership (complete payment)
   const transferOwnership = useCallback(async (saleId, paymentInEther) => {
@@ -159,6 +166,7 @@ export const usePropertyExchange = () => {
       setLoading(false);
       return result;
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to transfer ownership';
       setError(errorMsg);
       setLoading(false);
@@ -186,6 +194,7 @@ export const usePropertyExchange = () => {
         state: parseInt(sale.state),
       }));
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to get sales by location';
       setError(errorMsg);
       throw new Error(errorMsg);
@@ -210,6 +219,7 @@ export const usePropertyExchange = () => {
         requestId: parseInt(user.requestId),
       }));
     } catch (err) {
+      console.error(err);
       const errorMsg = err.message || 'Failed to get requested users';
       setError(errorMsg);
       throw new Error(errorMsg);
@@ -232,12 +242,14 @@ export const usePropertyExchange = () => {
       setLoading(false);
       return result;
     } catch (err) {
+      console.error('Failed to cancel sale:', err);
       const errorMsg = err.message || 'Failed to cancel sale';
       setError(errorMsg);
       setLoading(false);
       throw new Error(errorMsg);
     }
   }, [contracts.propertyExchange, currentAccount]);
+
 
   return {
     addPropertyOnSale,

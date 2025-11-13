@@ -99,6 +99,16 @@ contract PropertyRegistry {
         return propertiesContract.getLandDetailsAsStruct(propertyId).revenueDepartmentId;
     }
 
+
+    //Get all properties
+    function getAllProperties() public view returns (PropertyLedger.Land[] memory) {
+        PropertyLedger.Land[] memory all = new PropertyLedger.Land[](allProperties.length);
+        for (uint i = 0; i < allProperties.length; i++) {
+            all[i] = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+        }
+        return all;
+    }
+
     //Get pending properties
     function getPendingPropertiesForVerification() public view returns (PropertyLedger.Land[] memory) {
         uint count = 0;
@@ -124,6 +134,56 @@ contract PropertyRegistry {
 
         return pendingProperties;
     }
+
+    //Get verified properties
+    function getVerifiedProperties() public view returns (PropertyLedger.Land[] memory) {
+        uint count = 0;
+
+        // Count how many properties are in Verified state
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.Verified) {
+                count++;
+            }
+        }
+
+        PropertyLedger.Land[] memory verifiedProperties = new PropertyLedger.Land[](count);
+        uint idx = 0;
+
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.Verified) {
+                verifiedProperties[idx] = land;
+                idx++;
+            }
+        }
+
+        return verifiedProperties;
+    }
+
+    //Get on sale properties
+    function getOnSaleProperties() public view returns (PropertyLedger.Land[] memory) {
+        uint count = 0;
+        
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.OnSale) {
+                count++;
+            }
+        }
+        PropertyLedger.Land[] memory onSale = new PropertyLedger.Land[](count);
+        uint idx = 0;
+        
+        for (uint i = 0; i < allProperties.length; i++) {
+            PropertyLedger.Land memory land = propertiesContract.getLandDetailsAsStruct(allProperties[i]);
+            if (land.state == PropertyLedger.StateOfProperty.OnSale) {
+                onSale[idx] = land;
+                idx++;
+            }
+        }
+        return onSale;
+    }
+
 
     function verifyProperty( uint256 _propertyId ) public onlyRevenueDeptEmployee(getRevenueDeptId(_propertyId)) {
         propertiesContract.markVerified(_propertyId, msg.sender);

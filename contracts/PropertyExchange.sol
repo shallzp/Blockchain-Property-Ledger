@@ -77,9 +77,6 @@ contract PropertyExchange {
         require(msg.sender == propertiesContract.getLandDetailsAsStruct(_propertyId).owner, "Only the owner can put the property on sale.");
 
         // add property id to list of properties that are available to sold on a loaction
-        uint256[] storage propertiesOnSale = propertiesOnSaleByLocation[propertiesContract.getLandDetailsAsStruct(_propertyId).locationId];
-        propertiesOnSale.push(sales.length);
-
         uint256 priceInWei = convertToWei(_price);
 
         Sales memory newSale = Sales({
@@ -97,6 +94,10 @@ contract PropertyExchange {
         });
 
         sales.push(newSale);
+
+        uint256[] storage propertiesOnSale = propertiesOnSaleByLocation[propertiesContract.getLandDetailsAsStruct(_propertyId).locationId];
+        propertiesOnSale.push(sales.length - 1);
+
         salesOfOwner[msg.sender].push(newSale.saleId);
 
         propertiesContract.putOnSale(_propertyId, msg.sender, priceInWei, false);
@@ -165,12 +166,13 @@ contract PropertyExchange {
     }
 
     // send purchase request to seller to buy a land from buyer
-    function sendPurchaseRequest( uint256 _saleId, uint256 _priceOffered ) public {
+    function sendPurchaseRequest(uint256 _saleId, uint256 _priceOffered) public {
         Sales storage sale = sales[_saleId];
         
         require(sale.propertyId != 0, "Sale does not exist");
-        require(sale.state == SaleState.Active,"Property Not in Active State to Purchase");
+        require(sale.state == SaleState.Active, "Property Not in Active State to Purchase"); 
 
+        // convert price offered to wei
         uint256 priceWei = convertToWei(_priceOffered);
 
         uint requestId = propertiesContract.requestToBuy(sale.propertyId, msg.sender, priceWei);
@@ -184,8 +186,9 @@ contract PropertyExchange {
         
         requestedSales[msg.sender].push(sale.saleId);
 
-        emit PurchaseRequestSent(_saleId, msg.sender, _priceOffered);
+        emit PurchaseRequestSent(_saleId, msg.sender, priceWei);
     }
+
 
     // function to accept buyer request 
     function acceptBuyerRequest( uint256 _saleId, address _buyer, uint256 _price ) public {

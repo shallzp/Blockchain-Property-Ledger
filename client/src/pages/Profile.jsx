@@ -254,10 +254,8 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Right Column - Profile Details (keep existing code) */}
+          {/* Right Column - Profile Details */}
           <div className="lg:col-span-2">
-            {/* ... rest of your existing profile details code ... */}
-            {/* I'll keep your existing code for the right column */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
@@ -289,7 +287,6 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Keep all your existing form fields */}
               <div className="space-y-6">
                 {/* First Name */}
                 <div>

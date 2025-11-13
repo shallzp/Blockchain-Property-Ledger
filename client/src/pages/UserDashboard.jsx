@@ -25,7 +25,7 @@ const UserDashboard = () => {
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   
   // Get contract hooks
-  const { getPropertiesOfOwner } = usePropertyRegistry();
+  const { getPropertiesOfOwner, getOnSaleProperties } = usePropertyRegistry();
   const { getMySales, getRequestedSales } = usePropertyExchange();
 
   const navigate = useNavigate();
@@ -52,15 +52,15 @@ const UserDashboard = () => {
 
           // Fetch user's active sales
           const sales = await getMySales(currentAccount);
-          setActiveSales(sales.filter(sale => sale.state === 0)); // Active state
+          setActiveSales(sales.filter(sale => sale.state === 0)); // State 0 = 'active'
 
           // Fetch requested properties
           const requests = await getRequestedSales(currentAccount);
           setRequestedProperties(requests);
 
-          // TODO: Fetch total available properties from blockchain
-          // This would require a new contract method to get all properties on sale
-          setTotalAvailable(156); // Placeholder
+          // Fetch total available (all on-sale properties)
+          const availableProps = await getOnSaleProperties();
+          setTotalAvailable(availableProps.length);
 
         } catch (error) {
           console.error('Error fetching user data:', error);

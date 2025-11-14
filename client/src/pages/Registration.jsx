@@ -5,7 +5,7 @@ import { Home, User, Mail, CreditCard, Loader, CheckCircle, XCircle, AlertCircle
 import FormInput from '../components/FormInput';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
-// import { uploadToIPFSSecure } from '../utils/secureIpfsUpload'; // If you implemented secure IPFS
+import { uploadToIPFS } from '../utils/ipfsUpload'; // Import your IPFS upload utility
 
 const Registration = () => {
   const navigate = useNavigate();
@@ -19,23 +19,21 @@ const Registration = () => {
     dateOfBirth: "",
     aadharNumber: "",
     resAddress: "",
-    // aadharFile: null, // commented out as no upload for now
-    // aadharFileHash: "" // commented out as no upload for now
+    aadharFile: null,
+    aadharFileHash: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [uploadProgress, setUploadProgress] = useState(0); // commented out upload progress
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleInputChange = (e) => {
-    const { name, value /*, files*/ } = e.target;
+    const { name, value, files } = e.target;
     setFormData(prev => ({
       ...prev,
-      // [name]: files ? files[0] : value,
-      [name]: value,
+      [name]: files ? files[0] : value,
     }));
-    setError("");
+    setError('');
   };
 
   const validateForm = () => {
@@ -63,29 +61,17 @@ const Registration = () => {
       setError('Valid Aadhaar number (12 digits) is required');
       return false;
     }
-    // Upload validation removed for now
-    // if (!formData.aadharFile) {
-    //   setError("Aadhaar PDF upload is required");
-    //   return false;
-    // }
+    if (!formData.aadharFile) {
+      setError("Aadhaar PDF upload is required");
+      return false;
+    }
     return true;
   };
-
-  // Upload function commented out for now
-  /*
-  const uploadToIPFS = async (file) => {
-    console.log('Uploading file to IPFS:', file.name);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-  };
-  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     if (!isConnected || !currentAccount) {
       setError('Please connect your wallet first');
@@ -94,21 +80,13 @@ const Registration = () => {
 
     setIsSubmitting(true);
     setError('');
-    // setUploadProgress(0); // commented out
 
     try {
-      // Upload step omitted for now
-      /*
       console.log('Uploading Aadhaar to IPFS...');
-      setUploadProgress(25);
-
       const ipfsHash = await uploadToIPFS(formData.aadharFile);
       console.log('IPFS Hash:', ipfsHash);
-      setUploadProgress(50);
-      */
 
       console.log('Registering user on blockchain...');
-
       const tx = await registerUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -116,28 +94,13 @@ const Registration = () => {
         aadharNumber: formData.aadharNumber,
         resAddress: formData.resAddress,
         email: formData.email,
-        aadharFileHash: ""// Provide empty string for now
+        aadharFileHash: ipfsHash
       });
 
-      // setUploadProgress(100); // commented out
       console.log('Transaction:', tx);
-
-      console.log('User registered with data:', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        dateOfBirth: formData.dateOfBirth,
-        aadharNumber: formData.aadharNumber,
-        resAddress: formData.resAddress,
-        email: formData.email,
-        // aadharFileHash: ipfsHash, // commented out
-        walletAddress: currentAccount,
-        role: 'User', // Always registered as User
-        verified: false // Requires Regional Admin verification
-      });
 
       setSuccess(true);
 
-      // Redirect to pending verification page
       setTimeout(() => {
         navigate('/pending-verification');
       }, 3000);
@@ -145,7 +108,6 @@ const Registration = () => {
     } catch (err) {
       console.error('Registration error:', err);
       setError(err.message || 'Registration failed. Please try again.');
-      // setUploadProgress(0); // commented out
     } finally {
       setIsSubmitting(false);
     }
@@ -186,7 +148,6 @@ const Registration = () => {
   }
 
   return (
-    // Main registration form UI below (unchanged except for aadharFile input commented out above)
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-8">
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -215,7 +176,6 @@ const Registration = () => {
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-            {/* Info Box */}
             <div className="mb-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -260,7 +220,6 @@ const Registration = () => {
                 placeholder="Enter your first name" 
                 required={true}
               />
-            
               <FormInput 
                 label="Last Name" 
                 Icon={User} 
@@ -317,8 +276,7 @@ const Registration = () => {
               required={true}
             />
 
-            {/* Upload input removed for now */}
-            {/* <FormInput 
+            <FormInput 
               label="Upload Aadhaar Card (PDF Format)" 
               Icon={Upload} 
               type="file" 
@@ -326,20 +284,7 @@ const Registration = () => {
               onChange={handleInputChange} 
               accept=".pdf" 
               required={true}
-            /> */}
-
-            {/* <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-gray-700">
-                  <p className="font-semibold mb-1">Privacy & Security</p>
-                  <p className="text-gray-600">
-                    Your Aadhaar document will be uploaded to IPFS (decentralized storage) and only the hash will be stored on the blockchain. 
-                    Only authorized Regional Admins can verify your documents securely.
-                  </p>
-                </div>
-              </div>
-            </div> */}
+            />
 
             <button
               type="submit"
@@ -366,7 +311,6 @@ const Registration = () => {
           </div>
         </form>
 
-        {/* What Happens Next */}
         <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
           <h3 className="text-xl font-bold text-gray-900 mb-4">What Happens Next?</h3>
           <div className="space-y-4">
@@ -402,7 +346,6 @@ const Registration = () => {
           </div>
         </div>
 
-        {/* Admin Note */}
         <div className="mt-6 bg-purple-50 rounded-xl p-6 border border-purple-200">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />

@@ -20621,12 +20621,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x6C6C33D0C93f74A036A423C851487af23A50b795",
-      "transactionHash": "0xbdf80e84fbc45b18a9787725b7c79386d39b3a9c5a6ba2f41240457a7696ca7a"
+      "address": "0x9bea4281966690114DC4EDE36a878303ED2ecFe0",
+      "transactionHash": "0x4cad844befc14712ad84474cc8a6ad03b452f6e1db6690cd46073cedaef183bf"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-11-13T20:31:42.731Z",
+  "updatedAt": "2025-11-14T04:47:57.565Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

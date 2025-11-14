@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-./src/contracts/*
-./src/utils/ipfsUpload.js
+/src/contracts/*
+/src/utils/*
+.env

@@ -130,11 +130,28 @@ const Explore = () => {
     setSortBy('latest');
   };
 
+  const saleStates = {
+    0: 'Active',
+    1: 'AcceptedBuyerRequest',
+    2: 'Success'
+  };
+
   const handleSendOffer = (property) => {
+    console.log("Make Offer clicked for property:");
+    console.log("Property ID:", property.propertyId);
+    console.log("Owner Wallet:", property.ownerWallet);
+    console.log("Survey Number:", property.surveyNo);
+    console.log("Location:", property.location);
+    console.log("Area:", property.area);
+    console.log("Price (ETH):", property.price);
+    console.log("Status:", property.status);
+    console.log("State Value:", property.stateValue, "| Meaning:", saleStates[property.stateValue] || "Unknown");
+
     setSelectedProperty(property);
     setOfferPrice(property.price);
     setShowOfferModal(true);
   };
+
 
   // Called when user clicks "Send Offer"
   const submitOffer = async () => {

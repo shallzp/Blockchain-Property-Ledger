@@ -107,7 +107,7 @@ export const usePropertyExchange = () => {
         .sendPurchaseRequest(saleId, offerPriceInEther)
         .send({ 
           from: currentAccount,
-          gas: 300000
+          // gas: 300000
         });
       setLoading(false);
       return result;

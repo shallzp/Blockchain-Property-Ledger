@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Users, Shield, Home, ChevronRight, Plus, CheckCircle } from 'lucide-react';
+import { Users, Shield, Home, ChevronRight, Plus, CheckCircle, Activity } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
 import { useWeb3 } from '../context/Web3Context';
 import { useUserRegistry } from '../hooks/useUserRegistry';
 import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
+import { useTransactionAudit } from '../hooks/useTransactionAudit';
 
 const MainAdminDashboard = () => {
   const navItems = useNavItems();
@@ -14,6 +15,7 @@ const MainAdminDashboard = () => {
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getTotalUsers, getRegionalAdminCount, getAllRegionalAdmins } = useUserRegistry();
   const { getTotalProperties } = usePropertyRegistry();
+  const { getAllTransactions } = useTransactionAudit();
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -22,6 +24,18 @@ const MainAdminDashboard = () => {
     localAdmins: 0,
   });
   const [localAdmins, setLocalAdmins] = useState([]);
+  const [recentAudit, setRecentAudit] = useState([]);
+  const [auditError, setAuditError] = useState('');
+
+  const shortenAddress = (value) => {
+    if (!value || value.length < 12) return value || '-';
+    return `${value.slice(0, 8)}...${value.slice(-6)}`;
+  };
+
+  const formatAuditTime = (timestamp) => {
+    if (!timestamp) return 'Unknown time';
+    return new Date(timestamp).toLocaleString();
+  };
 
   useEffect(() => {
     if (!web3Loading && !isConnected) navigate("/");
@@ -37,6 +51,16 @@ const MainAdminDashboard = () => {
           getTotalProperties(),
           getAllRegionalAdmins(),
         ]);
+
+        let auditEvents = [];
+        try {
+          auditEvents = await getAllTransactions({ limit: 8 });
+          setAuditError('');
+        } catch (auditFetchError) {
+          console.error('Error fetching audit events:', auditFetchError);
+          setAuditError('Unable to fetch recent audit activity right now.');
+        }
+
         setStats(prev => ({
           ...prev,
           totalUsers: Number(totalUsers),
@@ -44,21 +68,21 @@ const MainAdminDashboard = () => {
           totalProperties: Number(totalProps),
         }));
         setLocalAdmins(admins.map(addr => ({ wallet: addr, name: addr.slice(0, 6) + '...' /* placeholder */, region: 'N/A' })));
+        setRecentAudit(auditEvents);
       } catch {
         setStats({
           totalUsers: 0,
           totalProperties: 0,
           localAdmins: 0,
-          activeAdmins: 0,
-    
-          totalTransactions: 0,
         });
         setLocalAdmins([]);
+        setRecentAudit([]);
+        setAuditError('Unable to fetch recent audit activity right now.');
       }
       setLoading(false);
     };
     fetchData();
-  }, [getTotalUsers, getRegionalAdminCount, getTotalProperties, getAllRegionalAdmins]);
+  }, [getTotalUsers, getRegionalAdminCount, getTotalProperties, getAllRegionalAdmins, getAllTransactions]);
 
   if (web3Loading || loading) {
     return (
@@ -83,7 +107,7 @@ const MainAdminDashboard = () => {
             </div>
           </div>
           {/* Stats cards */}
-          <div className="grid grid-cols-3 gap-6 mt-8">
+          <div className="grid grid-cols-4 gap-6 mt-8">
             <button className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 text-left hover:shadow-xl transition">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -114,6 +138,19 @@ const MainAdminDashboard = () => {
               <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.localAdmins}</h3>
               <p className="text-sm text-gray-500">Total Regional Admins</p>
             </button>
+            <button
+              onClick={() => navigate('/main/monitor')}
+              className="bg-white rounded-2xl p-6 shadow-lg border border-cyan-100 text-left hover:shadow-xl transition"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-cyan-600" />
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-1">{recentAudit.length}</h3>
+              <p className="text-sm text-gray-500">Recent Audit Events</p>
+            </button>
           </div>
           {/* Regional Admins list */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mt-12">
@@ -143,6 +180,52 @@ const MainAdminDashboard = () => {
                           <CheckCircle className="w-5 h-5 text-green-500 mr-1" />
                           <span className="text-green-600 font-medium text-base">Verified</span>
                         </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mt-8">
+            <div className="p-8">
+              <div className="flex items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800 flex-1">Recent Audit Activity</h2>
+                <button
+                  onClick={() => navigate('/main/monitor')}
+                  className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 transition"
+                >
+                  Open Full Monitor
+                </button>
+              </div>
+
+              {auditError && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {auditError}
+                </div>
+              )}
+
+              {recentAudit.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No audit events found yet.</div>
+              ) : (
+                <div className="space-y-3">
+                  {recentAudit.slice(0, 5).map((eventItem) => (
+                    <div
+                      key={eventItem.id}
+                      className="flex items-center justify-between rounded-xl border border-gray-100 bg-slate-50 px-4 py-3"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">{eventItem.type}</p>
+                        <p className="text-xs text-gray-500">
+                          {eventItem.contractName} | {eventItem.event}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">
+                          {shortenAddress(eventItem.from)} {'->'} {shortenAddress(eventItem.to)}
+                        </p>
+                        <p className="text-xs text-gray-400">{formatAuditTime(eventItem.timestamp)}</p>
                       </div>
                     </div>
                   ))}

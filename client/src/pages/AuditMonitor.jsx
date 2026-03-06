@@ -11,12 +11,27 @@ const AuditMonitor = () => {
   const navigate = useNavigate();
   const navItems = useNavItems();
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
-  const { getAllTransactions, loading: auditLoading } = useTransactionAudit();
+  const { getAllTransactions, loading: auditLoading, error: auditError } = useTransactionAudit();
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filteredTx, setFilteredTx] = useState([]);
+
+  const shortenHash = (value) => {
+    if (!value || value.length < 14) return value || '-';
+    return `${value.slice(0, 10)}...${value.slice(-8)}`;
+  };
+
+  const shortenAddress = (value) => {
+    if (!value || value.length < 12) return value || '-';
+    return `${value.slice(0, 8)}...${value.slice(-6)}`;
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '-';
+    return new Date(timestamp).toLocaleString();
+  };
 
   useEffect(() => {
     if (!web3Loading && !isConnected) {
@@ -54,7 +69,9 @@ const AuditMonitor = () => {
       (tx.txHash && tx.txHash.toLowerCase().includes(lower)) ||
       (tx.from && tx.from.toLowerCase().includes(lower)) ||
       (tx.to && tx.to.toLowerCase().includes(lower)) ||
-      (tx.type && tx.type.toLowerCase().includes(lower))
+      (tx.type && tx.type.toLowerCase().includes(lower)) ||
+      (tx.event && tx.event.toLowerCase().includes(lower)) ||
+      (tx.contractName && tx.contractName.toLowerCase().includes(lower))
     );
     setFilteredTx(filtered);
   }, [search, transactions]);
@@ -92,6 +109,12 @@ const AuditMonitor = () => {
           </div>
         </header>
 
+        {auditError && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Unable to load full audit trail: {auditError}
+          </div>
+        )}
+
         {filteredTx.length === 0 ? (
           <div className="bg-white shadow-lg rounded-2xl p-12 text-center border border-dashed border-gray-300">
             <AlertCircle className="mx-auto w-16 h-16 text-gray-400 mb-4" />
@@ -107,20 +130,23 @@ const AuditMonitor = () => {
                   <th className="px-4 py-3">From</th>
                   <th className="px-4 py-3">To</th>
                   <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">Contract</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Event</th>
+                  <th className="px-4 py-3">Time</th>
                   <th className="px-4 py-3 text-center">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 {filteredTx.map(tx => (
-                  <tr key={tx.txHash} className="hover:bg-orange-50 cursor-pointer">
+                  <tr key={tx.id || tx.txHash} className="hover:bg-orange-50 cursor-pointer">
                     <td className="whitespace-nowrap px-4 py-2 font-mono">
-                      {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-8)}
+                      {shortenHash(tx.txHash)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-2 font-mono">{tx.from}</td>
-                    <td className="whitespace-nowrap px-4 py-2 font-mono">{tx.to}</td>
+                    <td className="whitespace-nowrap px-4 py-2 font-mono">{shortenAddress(tx.from)}</td>
+                    <td className="whitespace-nowrap px-4 py-2 font-mono">{shortenAddress(tx.to)}</td>
                     <td className="px-4 py-2 capitalize">{tx.type}</td>
+                    <td className="px-4 py-2">{tx.contractName || '-'}</td>
                     <td className="px-4 py-2">
                       {tx.status === 'success' ? (
                         <CheckCircle className="text-green-600 w-5 h-5 inline" />
@@ -129,9 +155,10 @@ const AuditMonitor = () => {
                       )}
                     </td>
                     <td className="px-4 py-2">{tx.event}</td>
+                    <td className="whitespace-nowrap px-4 py-2">{formatTime(tx.timestamp)}</td>
                     <td className="whitespace-nowrap px-4 py-2 text-center">
                       <button
-                        onClick={() => alert(JSON.stringify(tx.args, null, 2))}
+                        onClick={() => window.alert(JSON.stringify(tx.args, null, 2))}
                         className="text-orange-600 hover:text-orange-700 flex items-center justify-center gap-1"
                       >
                         <ChevronRight className="w-5 h-5" />

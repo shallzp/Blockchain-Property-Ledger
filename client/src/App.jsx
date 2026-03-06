@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Landing from './pages/Landing';
 
@@ -32,34 +32,38 @@ function App() {
         <Route path="/register" element={<Registration/>} />
 
         {/* Protected routes wrapped by AuthWrapper */}
-        <Route 
-          path="/*" 
-          element={
-            <AuthWrapper>
-              <Routes>
-                <Route path="profile" element={<Profile/>} />
+        <Route element={<AuthWrapper />}>
+          <Route path="/profile" element={<Profile/>} />
 
-                {/* User routes */}
-                <Route path="user/dashboard" element={<UserDashboard/>} />
-                <Route path="user/properties" element={<Properties/>} />
-                <Route path="user/add-property" element={<AddProperty/>} />
-                <Route path="user/requests" element={<Requests/>} />
-                <Route path="user/requested" element={<Requested/>} />
-                <Route path="user/explore" element={<Explore/>} />
+          {/* User routes */}
+          <Route path="/user/dashboard" element={<UserDashboard/>} />
+          <Route path="/user/properties" element={<Properties/>} />
+          <Route path="/user/add-property" element={<AddProperty/>} />
+          <Route path="/user/requests" element={<Requests/>} />
+          <Route path="/user/requested" element={<Requested/>} />
+          <Route path="/user/explore" element={<Explore/>} />
 
-                {/* Main Admin routes */}
-                <Route path="main/dashboard" element={<MainAdminDashboard/>} />
-                <Route path="main/manage-admin" element={<ManageAdmin/>} />
-                <Route path="main/monitor" element={<AuditMonitor/>} />
+          {/* Main Admin routes */}
+          <Route path="/main/dashboard" element={<MainAdminDashboard/>} />
+          <Route path="/main/manage-admin" element={<ManageAdmin/>} />
+          <Route path="/main/monitor" element={<AuditMonitor/>} />
 
-                {/* Regional Admin routes */}
-                <Route path="admin/dashboard" element={<AdminDashboard/>} />
-                <Route path="admin/verify-property" element={<VerifyProperty/>} />
-                <Route path="admin/verify-users" element={<VerifyUsers/>} />
-              </Routes>
-            </AuthWrapper>
-          }
-        />
+          {/* Regional Admin routes */}
+          <Route path="/admin/dashboard" element={<AdminDashboard/>} />
+          <Route path="/admin/verify-property" element={<VerifyProperty/>} />
+          <Route path="/admin/verify-users" element={<VerifyUsers/>} />
+
+          {/* Legacy aliases */}
+          <Route path="/dashboard" element={<Navigate to="/profile" replace />} />
+          <Route path="/properties" element={<Navigate to="/user/properties" replace />} />
+          <Route path="/add-property" element={<Navigate to="/user/add-property" replace />} />
+          <Route path="/requests" element={<Navigate to="/user/requests" replace />} />
+          <Route path="/requested" element={<Navigate to="/user/requested" replace />} />
+          <Route path="/explore" element={<Navigate to="/user/explore" replace />} />
+          <Route path="/property/:propertyId" element={<Navigate to="/user/properties" replace />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

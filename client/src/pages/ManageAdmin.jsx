@@ -14,12 +14,13 @@ const ManageAdmin = () => {
   const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const {
     getAllRegionalAdmins,
+    addRegionalAdmin,
     removeRegionalAdmin,
     getUserDetails,
     loading: contractLoading,
   } = useUserRegistry();
 
-  const { getEmployeeByRevenueDept, updateAdminRevenueDept } = usePropertyRegistry();
+  const { getEmployeeByRevenueDept, mapRevenueDeptToEmployee } = usePropertyRegistry();
 
   const [regionalAdmins, setRegionalAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ const ManageAdmin = () => {
       try {
         const userDetails = await getUserDetails(currentAccount);
         if (!userDetails || userDetails.role !== 'Main Administrator') {
-          navigate('/dashboard');
+          navigate('/main/dashboard');
         }
       } catch (error) {
         console.error('Authorization check failed', error);
@@ -98,7 +99,8 @@ const ManageAdmin = () => {
     setProcessingUser(newAdminAddress);
     setProcessingAction('promote');
     try {
-      await addRegionalAdmin(newAdminAddress, newRevenueDept);
+      await addRegionalAdmin(newAdminAddress);
+      await mapRevenueDeptToEmployee(parseInt(newRevenueDept), newAdminAddress);
       alert(`User ${newAdminAddress} promoted to Regional Admin with Revenue Dept ${newRevenueDept}`);
       setNewAdminAddress('');
       setNewRevenueDept('');

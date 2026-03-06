@@ -87,7 +87,7 @@ const UserDashboard = () => {
 
   // Handle search
   const handleSearch = () => {
-    navigate('/explore', { 
+    navigate('/user/explore', { 
       state: { 
         filters: searchFilters,
         propertyType 
@@ -147,13 +147,13 @@ const UserDashboard = () => {
 
               <div className="flex gap-2 mb-6">
                 <button 
-                  onClick={() => navigate('/explore')}
+                  onClick={() => navigate('/user/explore')}
                   className="flex-1 px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30"
                 >
                   <Home className="w-4 h-4" /> Buy Property
                 </button>
                 <button 
-                  onClick={() => navigate('/properties')}
+                  onClick={() => navigate('/user/properties')}
                   className="flex-1 px-4 py-2 bg-orange-100 text-orange-600 rounded-lg font-medium hover:bg-orange-200 transition"
                 >
                   For Sale
@@ -276,7 +276,7 @@ const UserDashboard = () => {
                     Register your first property to get started
                   </p>
                   <button 
-                    onClick={() => navigate('/add-property')}
+                    onClick={() => navigate('/user/add-property')}
                     className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition"
                   >
                     Add Property
@@ -292,7 +292,7 @@ const UserDashboard = () => {
           <div className="grid grid-cols-4 gap-6 mt-8">
             {/* Your Properties */}
             <button
-              onClick={() => navigate('/properties')}
+              onClick={() => navigate('/user/properties')}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition text-left"
             >
               <div className="flex items-center justify-between mb-3">
@@ -309,7 +309,7 @@ const UserDashboard = () => {
 
             {/* Active Requests */}
             <button
-              onClick={() => navigate('/requests')}
+              onClick={() => navigate('/user/requests')}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition text-left"
             >
               <div className="flex items-center justify-between mb-3">
@@ -326,7 +326,7 @@ const UserDashboard = () => {
 
             {/* Requested Properties */}
             <button
-              onClick={() => navigate('/requested')}
+              onClick={() => navigate('/user/requested')}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition text-left"
             >
               <div className="flex items-center justify-between mb-3">
@@ -343,7 +343,7 @@ const UserDashboard = () => {
 
             {/* Total Available */}
             <button
-              onClick={() => navigate('/explore')}
+              onClick={() => navigate('/user/explore')}
               className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition text-left"
             >
               <div className="flex items-center justify-between mb-3">

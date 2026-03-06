@@ -3,11 +3,9 @@ import { ethers } from 'ethers';
 
 import { useWeb3 } from '../context/Web3Context';
 import PropertyExchangeABI from '../contracts/PropertyExchange.json';
-import PropertyLedgerABI from '../contracts/PropertyLedger.json';
 
 // Replace these with actual deployed addresses
 const PROPERTY_EXCHANGE_ADDRESS = '0xYourPropertyExchangeAddress';
-const PROPERTY_LEDGER_ADDRESS = '0xYourPropertyLedgerAddress';
 
 export const useTransactionAudit = () => {
   const { provider } = useWeb3();
@@ -20,7 +18,6 @@ export const useTransactionAudit = () => {
 
       // Instantiate contracts
       const exchange = new ethers.Contract(PROPERTY_EXCHANGE_ADDRESS, PropertyExchangeABI, provider);
-      const ledger = new ethers.Contract(PROPERTY_LEDGER_ADDRESS, PropertyLedgerABI, provider);
 
       // Define event queries for key events (customize as per your contract)
       const eventPromises = [

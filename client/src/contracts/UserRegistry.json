@@ -32486,12 +32486,12 @@
         }
       },
       "links": {},
-      "address": "0x2c74dE67A5ea2053D030182f583B607C31774cC5",
-      "transactionHash": "0x69413bd49eeeb10884df37fdd73b583fb1a4628beb0018344b6e5109e4ebf525"
+      "address": "0x0426B7Dd501ca412D438BCA1Df28C69359a2Df0b",
+      "transactionHash": "0x26155c26ed966a3c531f9d04650142f0b2ac873466091a9ce121184e482ec31d"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-11-14T04:47:57.543Z",
+  "updatedAt": "2025-11-14T05:24:19.873Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

@@ -335,6 +335,7 @@ export const useUserRegistry = () => {
     getAllRegionalAdmins,
     getPendingUserVerifications,
     getTotalUsers,
+    getRegionalAdminCount,
     loading,
     error,
   };

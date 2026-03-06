@@ -12,6 +12,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
   const activeStyle = "px-4 py-2 bg-orange-500 text-white rounded-lg font-medium shadow-sm flex items-center gap-2";
 
   const navigationItems = navItems;
+  const homePath = navigationItems?.[0]?.to || '/';
 
   const handleDisconnect = () => {
     disconnectWallet();
@@ -27,7 +28,7 @@ const Navbar = ({ userRole, walletAdd, navItems }) => {
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
       {/* Logo Section */}
-      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/user/dashboard')}>
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(homePath)}>
         <img src="../Logo.png" alt="PropChain Logo" className="w-8 h-8" />
         <span className="text-xl font-bold text-gray-800">PropChain</span>
       </div>

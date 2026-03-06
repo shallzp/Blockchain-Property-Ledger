@@ -95,10 +95,39 @@ export const usePropertyExchange = () => {
     }
   }, [contracts.propertyExchange, currentAccount, web3]);
 
+  // Get status of current buyer's request for a sale
+  const getStatusOfPurchaseRequest = useCallback(async (saleId, buyerAddress) => {
+    if (!contracts.propertyExchange) {
+      throw new Error('PropertyExchange contract not loaded');
+    }
+
+    try {
+      const fromAddress = buyerAddress || currentAccount;
+      const status = await contracts.propertyExchange.methods
+        .getStatusOfPurchaseRequest(saleId)
+        .call({ from: fromAddress });
+
+      return {
+        user: status.user,
+        priceOffered: web3.utils.fromWei(status.priceOffered.toString(), 'ether'),
+        state: parseInt(status.state),
+        requestId: parseInt(status.requestId),
+      };
+    } catch (err) {
+      console.error(err);
+      const errorMsg = err.message || 'Failed to get purchase request status';
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }, [contracts.propertyExchange, currentAccount, web3]);
+
   // Send purchase request
   const sendPurchaseRequest = useCallback(async (saleId, offerPriceInEther) => {
     if (!contracts.propertyExchange) throw new Error("PropertyExchange contract not loaded");
-    if (!saleId || !offerPriceInEther) throw new Error("Invalid saleId or offerPrice");
+    if (saleId === undefined || saleId === null || saleId === '') throw new Error("Invalid saleId");
+    if (offerPriceInEther === undefined || offerPriceInEther === null || offerPriceInEther === '') {
+      throw new Error("Invalid offerPrice");
+    }
     setLoading(true);
     setError(null);
     try {
@@ -255,6 +284,7 @@ export const usePropertyExchange = () => {
     addPropertyOnSale,
     getMySales,
     getRequestedSales,
+    getStatusOfPurchaseRequest,
     sendPurchaseRequest,
     acceptBuyerRequest,
     transferOwnership,

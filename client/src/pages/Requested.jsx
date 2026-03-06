@@ -13,7 +13,7 @@ const Requested = () => {
   
   const navItems = useNavItems();
   
-  const { isConnected, currentAccount, web3, loading: web3Loading } = useWeb3();
+  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
   const { getRequestedSales, transferOwnership, getStatusOfPurchaseRequest } = usePropertyExchange();
   const { getPropertyDetails } = usePropertyRegistry();
 
@@ -394,7 +394,7 @@ const Requested = () => {
               }
             </p>
             <button 
-              onClick={() => navigate('/explore')}
+              onClick={() => navigate('/user/explore')}
               className="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition"
             >
               Explore Properties

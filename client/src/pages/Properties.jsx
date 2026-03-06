@@ -257,7 +257,7 @@ const Properties = () => {
                 : "You haven't registered any properties yet"}
             </p>
             <button
-              onClick={() => navigate('/add-property')}
+              onClick={() => navigate('/user/add-property')}
               className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
             >
               Add Your First Property
@@ -333,33 +333,14 @@ const Properties = () => {
                     {property.state >= 2 && (
                       <>
                         <button
-                          onClick={() => navigate(`/requests?propertyId=${property.propertyId}`)}
+                          onClick={() => navigate(`/user/requests?propertyId=${property.propertyId}`)}
                           className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm font-medium"
                         >
                           <Eye className="w-4 h-4" />
                           Requests
                         </button>
                         <button
-                          onClick={async () => {
-                            try {
-                              setLoading(true);
-                              const sale = sales.find(s => s.propertyId === property.propertyId && s.state === 0);
-                              if (!sale) {
-                                alert('No active sale found for this property.');
-                                setLoading(false);
-                                return;
-                              }
-                              await cancelSale(sale.saleId);
-                              alert('Property removed from sale!');
-                              const userProperties = await getPropertiesOfOwner(currentAccount);
-                              setProperties(userProperties);
-                            } catch (error) {
-                              console.error('Error removing property from sale:', error);
-                              alert('Failed to remove property from sale: ' + error.message);
-                            } finally {
-                              setLoading(false);
-                            }
-                          }}
+                          onClick={() => handleRemoveFromSale(property)}
                           className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2 text-sm font-medium"
                         >
                           <DollarSign className="w-4 h-4" />

@@ -102,7 +102,7 @@ const Registration = () => {
       setSuccess(true);
 
       setTimeout(() => {
-        navigate('/pending-verification');
+        navigate('/profile');
       }, 3000);
 
     } catch (err) {

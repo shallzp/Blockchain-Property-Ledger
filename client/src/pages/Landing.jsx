@@ -59,7 +59,7 @@ const Landing = () => {
 
       {/* Hero Section */}
       <div className="relative">
-        <div className="mx-28 relative max-h-screen flex items-center w-350">
+        <div className="mx-28 relative h-120 flex items-center w-350">
           {/* Background Image with Overlay */}
           <div className="absolute inset-0 z-0">
             <div className="rounded-2xl absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/85 to-orange-900/80 z-10"></div>
@@ -67,7 +67,7 @@ const Landing = () => {
           </div>
 
           {/* Hero Content */}
-          <div className="relative z-20 max-w-7xl mx-auto px-8 pt-12 pb-32 w-full">
+          <div className="relative z-20 max-w-7xl mx-auto px-8 pt-12 w-full">
             <div className="max-w-4xl">
               <h1 className="text-7xl md:text-8xl font-bold mb-8">
                 <span className="text-white">THE </span>
@@ -84,13 +84,14 @@ const Landing = () => {
         </div>
 
         {/* Statistics Panel */}
-        <div className="relative z-40 max-w-7xl mx-auto px-8 -mt-32">
+        
+        {/* <div className="relative z-40 max-w-7xl mx-auto px-8 -mt-32">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
             <p className="text-gray-500 text-sm uppercase tracking-wider mb-6 font-semibold">
               THE MOST POWERFUL DECENTRALIZED PROPERTY REGISTRY
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {/* Statistic Cards */}
+              //Statistics Cards
               {[
                 { value: '0+', label: 'Verified Properties' },
                 { value: '0M', label: 'Total Transactions' },
@@ -111,7 +112,7 @@ const Landing = () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Features Section */}

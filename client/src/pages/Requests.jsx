@@ -212,7 +212,7 @@ const Requests = () => {
                 #{propertyIdFilter}
               </span>
               <button
-                onClick={() => navigate('/requests')}
+                onClick={() => navigate('/user/requests')}
                 className="text-sm text-blue-600 hover:underline"
               >
                 Clear filter
@@ -452,7 +452,7 @@ const Requests = () => {
               }
             </p>
             <button 
-              onClick={() => navigate('/properties')}
+              onClick={() => navigate('/user/properties')}
               className="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition"
             >
               View Your Properties

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Home, MapPin, Search, Send, X, Maximize, TrendingUp } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
@@ -12,10 +12,8 @@ import { usePropertyRegistry } from '../hooks/usePropertyRegistry';
 const Explore = () => {
   const navigate = useNavigate();
   const navItems = useNavItems();
-  const location = useLocation();
-
-  const { isConnected, currentAccount, loading: web3Loading, web3 } = useWeb3();
-  const { sendPurchaseRequest } = usePropertyExchange();
+  const { isConnected, currentAccount, loading: web3Loading } = useWeb3();
+  const { sendPurchaseRequest, getSalesByLocation } = usePropertyExchange();
   const { getAllProperties, getVerifiedProperties, getOnSaleProperties } = usePropertyRegistry();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,15 +51,32 @@ const Explore = () => {
             props = await getVerifiedProperties();
           }
 
+          // Build a map: propertyId -> active saleId
+          const activeSaleByProperty = {};
+          const onSaleProps = props.filter((p) => p.state === 2);
+          const uniqueLocationIds = [...new Set(onSaleProps.map((p) => p.locationId))];
+          const salesByLocation = await Promise.all(uniqueLocationIds.map((locId) => getSalesByLocation(locId)));
+
+          salesByLocation.forEach((sales) => {
+            sales.forEach((sale) => {
+              if (sale.state === 0) {
+                activeSaleByProperty[sale.propertyId] = sale.saleId;
+              }
+            });
+          });
+
           // Map to UI model as before
           const allProperties = props.map((property) => ({
             id: property.propertyId,
+            saleId: activeSaleByProperty[property.propertyId] ?? null,
             propertyId: property.propertyId,
             title: `Property #${property.propertyId}`,
             ownerWallet: property.owner,
             surveyNo: property.surveyNumber,
+            locationId: property.locationId,
             location: `Location ${property.locationId}`,
             area: `${property.area} sq ft`,
+            areaValue: property.area,
             price: property.marketValue,
             priceETH: parseFloat(property.marketValue),
             status: stateNames[property.state],
@@ -82,7 +97,7 @@ const Explore = () => {
 
     fetchProperties();
   }, [isConnected, currentAccount, stateFilter,
-      getAllProperties, getOnSaleProperties, getVerifiedProperties]);
+      getAllProperties, getOnSaleProperties, getVerifiedProperties, getSalesByLocation]);
 
 
   // Filter properties
@@ -114,7 +129,7 @@ const Explore = () => {
 
   // Sort properties
   const sortedProperties = [...filteredProperties].sort((a, b) => {
-    if (sortBy === 'latest') return new Date(b.listedDate) - new Date(a.listedDate);
+    if (sortBy === 'latest') return b.propertyId - a.propertyId;
     if (sortBy === 'priceLow') return a.priceETH - b.priceETH;
     if (sortBy === 'priceHigh') return b.priceETH - a.priceETH;
     if (sortBy === 'area') return b.areaValue - a.areaValue;
@@ -130,28 +145,15 @@ const Explore = () => {
     setSortBy('latest');
   };
 
-  const saleStates = {
-    0: 'Active',
-    1: 'AcceptedBuyerRequest',
-    2: 'Success'
-  };
-
   const handleSendOffer = (property) => {
-    console.log("Make Offer clicked for property:");
-    console.log("Property ID:", property.propertyId);
-    console.log("Owner Wallet:", property.ownerWallet);
-    console.log("Survey Number:", property.surveyNo);
-    console.log("Location:", property.location);
-    console.log("Area:", property.area);
-    console.log("Price (ETH):", property.price);
-    console.log("Status:", property.status);
-    console.log("State Value:", property.stateValue, "| Meaning:", saleStates[property.stateValue] || "Unknown");
-
+    if (property.saleId === null) {
+      alert('Active sale not found for this property. Please refresh and try again.');
+      return;
+    }
     setSelectedProperty(property);
     setOfferPrice(property.price);
     setShowOfferModal(true);
   };
-
 
   // Called when user clicks "Send Offer"
   const submitOffer = async () => {
@@ -164,13 +166,12 @@ const Explore = () => {
       alert("Please enter a valid positive offer price");
       return;
     }
-    console.log("Submitting offer for saleId:", selectedProperty.id, "with offerPrice (ETH):", offerPriceValue);
     try {
-      await sendPurchaseRequest(selectedProperty.id, offerPriceValue);
+      await sendPurchaseRequest(selectedProperty.saleId, offerPriceValue);
       alert("Purchase request sent successfully!");
+      setShowOfferModal(false);
       setSelectedProperty(null);
       setOfferPrice("");
-      // Optionally close modal etc...
     } catch (error) {
       console.error("Error sending offer:", error);
       alert("Failed to send offer: " + error.message);
@@ -364,14 +365,7 @@ const Explore = () => {
                   <p className="text-xs font-mono text-gray-600 break-all">{property.ownerWallet}</p>
                 </div>
                 <div className="flex gap-2">
-                  {/* <button
-                    onClick={() => navigate(`/property/${property.propertyId}`)}
-                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Details
-                  </button> */}
-                  {property.stateValue === 2 && ( // 2 means OnSale
+                  {property.stateValue === 2 && property.saleId !== null && ( // 2 means OnSale
                     <button
                       onClick={() => handleSendOffer(property)}
                       className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition flex items-center justify-center gap-2"

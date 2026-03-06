@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom";
 import { Building2, Users, Home, Clock, FileCheck, CheckCircle, XCircle, Eye, ChevronRight } from 'lucide-react';
 
 import Navbar from '../components/Navbar';

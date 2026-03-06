@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, MapPin, Maximize, FileText, Loader, CheckCircle, XCircle, AlertCircle, Upload, Building, Hash, DollarSign, User } from 'lucide-react';
+import { Home, MapPin, Maximize, FileText, Loader, CheckCircle, XCircle, AlertCircle, Building, Hash, DollarSign, User } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';
@@ -73,7 +73,7 @@ const AddProperty = () => {
           if (!verified) {
             setError('Your account must be verified by a Regional Admin before you can register properties.');
           }
-        } catch (error) {
+        } catch {
           setError('Failed to check verification status');
         } finally {
           setCheckingVerification(false);
@@ -121,7 +121,7 @@ const AddProperty = () => {
       // }
 
       // Step 2: Call contract to add land
-      const tx = await addLand({
+      await addLand({
         locationId: parseInt(formData.locationId),
         revenueDepartmentId: parseInt(formData.revenueDepartmentId),
         surveyNumber: parseInt(formData.surveyNumber),

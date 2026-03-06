@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
-import { Home, User, FileText, Eye, Send, Search } from 'lucide-react';
-import { useNavigate, useLocation } from "react-router-dom";
+import { User, FileText, Eye, Send, Search } from 'lucide-react';
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import PendingVerification from "./PendingVerification";
 import { useWeb3 } from "../context/Web3Context";
 import { useUserRegistry } from "../hooks/useUserRegistry";
@@ -32,7 +33,25 @@ const mainAdminNavItems = [
   { to: "/main/manage-admin", label: "Manage Admins", icon: Send },
 ];
 
-const AuthWrapper = ({ children }) => {
+const roleConfig = {
+  "User": {
+    navItems: userNavItems,
+    homePath: "/user/dashboard",
+    allowedPrefix: "/user",
+  },
+  "Regional Admin": {
+    navItems: adminNavItems,
+    homePath: "/admin/dashboard",
+    allowedPrefix: "/admin",
+  },
+  "Main Administrator": {
+    navItems: mainAdminNavItems,
+    homePath: "/main/dashboard",
+    allowedPrefix: "/main",
+  },
+};
+
+const AuthWrapper = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isConnected, currentAccount } = useWeb3();
@@ -42,69 +61,90 @@ const AuthWrapper = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [showPendingPopup, setShowPendingPopup] = useState(false);
 
-  const isUserRegistered = async (address) => {
-    if (!contracts?.userRegistry) return false;
-    return await contracts.userRegistry.methods.registeredUsers(address).call();
-  };
-
   useEffect(() => {
     const checkAuthFlow = async () => {
+      if (!isConnected || !currentAccount) {
+        setNavItems([]);
+        setShowPendingPopup(false);
+        setLoading(false);
+        navigate("/", { replace: true });
+        return;
+      }
+
       if (!contracts?.userRegistry) {
         setLoading(true);
         return;
       }
-      if (!isConnected || !currentAccount) {
-        setNavItems([]);
-        setLoading(false);
-        return;
-      }
 
       const wallet = currentAccount.toLowerCase();
-      const publicPaths = ["/", "/login", "/register"];
 
       try {
-        const registered = await isUserRegistered(wallet);
+        const registered = await contracts.userRegistry.methods.registeredUsers(wallet).call();
         if (!registered) {
           setNavItems([]);
+          setShowPendingPopup(false);
           setLoading(false);
-          navigate("/register");
+          navigate("/register", { replace: true });
           return;
         }
-        const verified = await isUserVerified(wallet);
-        if (!verified) {
-          setNavItems([]);
-          setLoading(false);
-          setShowPendingPopup(true);
-          return;
-        }
-        const userDetails = await getUserDetails(wallet);
 
-        if (userDetails.role === "Main Administrator") {
-          setNavItems(mainAdminNavItems);
-          setLoading(false);
-          if (publicPaths.includes(location.pathname)) {
-            navigate("/main/dashboard");
-          }
-        } else if (userDetails.role === "Regional Admin") {
-          setNavItems(adminNavItems);
-          setLoading(false);
-          if (publicPaths.includes(location.pathname)) {
-            navigate("/admin/dashboard");
-          }
-        } else if (userDetails.role === "User") {
-          setNavItems(userNavItems);
-          setLoading(false);
-          if (publicPaths.includes(location.pathname)) {
-            navigate("/user/dashboard");
-          }
-        } else {
+        const userDetails = await getUserDetails(wallet);
+        const config = roleConfig[userDetails.role];
+        if (!config) {
           setNavItems([]);
+          setShowPendingPopup(false);
           setLoading(false);
+          navigate("/", { replace: true });
+          return;
         }
+
+        // Keep compatibility for older bookmarks/links.
+        const legacyAliases = {
+          "/dashboard": config.homePath,
+          "/properties": "/user/properties",
+          "/add-property": "/user/add-property",
+          "/requests": "/user/requests",
+          "/requested": "/user/requested",
+          "/explore": "/user/explore",
+          "/pending-verification": "/profile",
+        };
+        if (legacyAliases[location.pathname]) {
+          setNavItems(config.navItems);
+          setLoading(false);
+          navigate(legacyAliases[location.pathname], { replace: true });
+          return;
+        }
+
+        const verified = await isUserVerified(wallet);
+
+        setNavItems(config.navItems);
+
+        // Pending users can only access profile.
+        if (!verified) {
+          setShowPendingPopup(location.pathname !== "/profile");
+          setLoading(false);
+          if (location.pathname !== "/profile") {
+            navigate("/profile", { replace: true });
+          }
+          return;
+        }
+
+        setShowPendingPopup(false);
+
+        const isProfilePath = location.pathname === "/profile";
+        const isRolePath = location.pathname.startsWith(config.allowedPrefix);
+        if (!isProfilePath && !isRolePath) {
+          setLoading(false);
+          navigate(config.homePath, { replace: true });
+          return;
+        }
+
+        setLoading(false);
       } catch (error) {
         console.error("AuthWrapper error:", error);
         setLoading(false);
         setNavItems([]);
+        setShowPendingPopup(false);
       }
     };
 
@@ -116,7 +156,7 @@ const AuthWrapper = ({ children }) => {
     getUserDetails,
     isUserVerified,
     navigate,
-    location,
+    location.pathname,
   ]);
 
   if (loading) {
@@ -132,7 +172,7 @@ const AuthWrapper = ({ children }) => {
       {showPendingPopup && (
         <PendingVerification onClose={() => setShowPendingPopup(false)} />
       )}
-      {children}
+      <Outlet />
     </NavContext.Provider>
   );
 };

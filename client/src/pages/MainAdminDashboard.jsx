@@ -44,7 +44,7 @@ const MainAdminDashboard = () => {
           totalProperties: Number(totalProps),
         }));
         setLocalAdmins(admins.map(addr => ({ wallet: addr, name: addr.slice(0, 6) + '...' /* placeholder */, region: 'N/A' })));
-      } catch (e) {
+      } catch {
         setStats({
           totalUsers: 0,
           totalProperties: 0,

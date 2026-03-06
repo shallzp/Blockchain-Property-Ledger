@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building2, Users, Home, Clock, FileCheck, CheckCircle, XCircle, Eye, ChevronRight } from 'lucide-react';
+import { Building2, Users, Home, Clock, FileCheck, CheckCircle, XCircle, Eye, ChevronRight, Loader } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import { useNavItems } from '../components/AuthWrapper';

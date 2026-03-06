@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react';
 
 import { useWeb3 } from '../context/Web3Context';
 
+const DEFAULT_LOOKBACK_BLOCKS = 5000;
+
 const EVENT_TYPE_MAP = {
   UserRegistered: 'User Registered',
   UserVerified: 'User Verified',
@@ -67,7 +69,7 @@ export const useTransactionAudit = () => {
 
   const getAllTransactions = useCallback(
     async (options = {}) => {
-      const { limit } = options;
+      const { limit, fromBlock: explicitFromBlock, lookbackBlocks = DEFAULT_LOOKBACK_BLOCKS } = options;
 
       if (!web3) {
         throw new Error('Web3 is not initialized');
@@ -87,10 +89,15 @@ export const useTransactionAudit = () => {
       setError(null);
 
       try {
+        const latestBlock = Number(await web3.eth.getBlockNumber());
+        const fromBlock = Number.isInteger(explicitFromBlock)
+          ? Math.max(0, explicitFromBlock)
+          : Math.max(0, latestBlock - Number(lookbackBlocks || DEFAULT_LOOKBACK_BLOCKS));
+
         const eventGroups = await Promise.all(
           auditContracts.map(async ([contractKey, contract]) => {
             const events = await contract.getPastEvents('allEvents', {
-              fromBlock: 0,
+              fromBlock,
               toBlock: 'latest',
             });
 
@@ -101,27 +108,34 @@ export const useTransactionAudit = () => {
           })
         );
 
-        const allEvents = eventGroups.flat();
-        const blockTimestampCache = new Map();
+        const allEvents = eventGroups.flat().filter((event) => Boolean(event?.transactionHash));
+
+        const uniqueBlockNumbers = [
+          ...new Set(
+            allEvents
+              .map((event) => Number(event.blockNumber || 0))
+              .filter((blockNumber) => blockNumber > 0)
+          ),
+        ];
+
+        const blockTimestampEntries = await Promise.all(
+          uniqueBlockNumbers.map(async (blockNumber) => {
+            const block = await web3.eth.getBlock(blockNumber);
+            const blockTimestamp = Number(block?.timestamp || 0);
+            const timestamp =
+              Number.isFinite(blockTimestamp) && blockTimestamp > 0
+                ? blockTimestamp * 1000
+                : null;
+            return [blockNumber, timestamp];
+          })
+        );
+
+        const blockTimestampCache = new Map(blockTimestampEntries);
 
         const txs = await Promise.all(
           allEvents.map(async (event) => {
             const blockNumber = Number(event.blockNumber || 0);
-            let timestamp = null;
-
-            if (blockNumber > 0) {
-              if (!blockTimestampCache.has(blockNumber)) {
-                const block = await web3.eth.getBlock(blockNumber);
-                const blockTimestamp = Number(block?.timestamp || 0);
-                blockTimestampCache.set(
-                  blockNumber,
-                  Number.isFinite(blockTimestamp) && blockTimestamp > 0
-                    ? blockTimestamp * 1000
-                    : null
-                );
-              }
-              timestamp = blockTimestampCache.get(blockNumber);
-            }
+            const timestamp = blockTimestampCache.get(blockNumber) || null;
 
             const eventName = event.event || 'UnknownEvent';
             const actors = resolveActors(eventName, event.returnValues);

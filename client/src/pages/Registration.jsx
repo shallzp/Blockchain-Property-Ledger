@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, User, Mail, CreditCard, Loader, CheckCircle, XCircle, AlertCircle, Upload, MapPinHouse, CalendarDays } from 'lucide-react';
+import { Home, User, Mail, CreditCard, Loader, XCircle, AlertCircle, Upload, MapPinHouse, CalendarDays } from 'lucide-react';
 
 import FormInput from '../components/FormInput';
 import { useWeb3 } from '../context/Web3Context';
@@ -25,7 +25,6 @@ const Registration = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -98,12 +97,7 @@ const Registration = () => {
       });
 
       console.log('Transaction:', tx);
-
-      setSuccess(true);
-
-      setTimeout(() => {
-        navigate('/profile');
-      }, 3000);
+      navigate('/pending-verification', { replace: true });
 
     } catch (err) {
       console.error('Registration error:', err);
@@ -112,40 +106,6 @@ const Registration = () => {
       setIsSubmitting(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-12 text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-12 h-12 text-green-500" />
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Registration Successful!</h2>
-          <p className="text-lg text-gray-600 mb-6">
-            Your registration has been submitted to the blockchain successfully.
-          </p>
-          <div className="bg-orange-50 rounded-xl p-6 border border-orange-200 mb-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-              <div className="text-left">
-                <p className="font-semibold text-orange-800 mb-2">Pending Verification</p>
-                <p className="text-sm text-orange-700">
-                  Your account requires verification from a Regional Admin before you can access all features.
-                </p>
-                <p className="text-sm text-orange-600 mt-2">
-                  You will receive access once verified. This usually takes 24-48 hours.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 text-gray-500">
-            <Loader className="w-5 h-5 animate-spin" />
-            <span>Redirecting...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 p-8">

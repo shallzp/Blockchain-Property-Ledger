@@ -22,6 +22,7 @@ import VerifyProperty from './pages/VerifyProperty';
 import VerifyUsers from './pages/VerifyUsers';
 
 import AuthWrapper from './components/AuthWrapper';
+import PendingVerification from './components/PendingVerification';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
 
         {/* Protected routes wrapped by AuthWrapper */}
         <Route element={<AuthWrapper />}>
+          <Route path="/pending-verification" element={<PendingVerification />} />
           <Route path="/profile" element={<Profile/>} />
 
           {/* User routes */}

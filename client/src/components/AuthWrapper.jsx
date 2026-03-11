@@ -2,7 +2,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, FileText, Eye, Send, Search } from 'lucide-react';
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import PendingVerification from "./PendingVerification";
 import { useWeb3 } from "../context/Web3Context";
 import { useUserRegistry } from "../hooks/useUserRegistry";
 
@@ -59,13 +58,11 @@ const AuthWrapper = () => {
 
   const [navItems, setNavItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showPendingPopup, setShowPendingPopup] = useState(false);
 
   useEffect(() => {
     const checkAuthFlow = async () => {
       if (!isConnected || !currentAccount) {
         setNavItems([]);
-        setShowPendingPopup(false);
         setLoading(false);
         navigate("/", { replace: true });
         return;
@@ -82,7 +79,6 @@ const AuthWrapper = () => {
         const registered = await contracts.userRegistry.methods.registeredUsers(wallet).call();
         if (!registered) {
           setNavItems([]);
-          setShowPendingPopup(false);
           setLoading(false);
           navigate("/register", { replace: true });
           return;
@@ -92,7 +88,6 @@ const AuthWrapper = () => {
         const config = roleConfig[userDetails.role];
         if (!config) {
           setNavItems([]);
-          setShowPendingPopup(false);
           setLoading(false);
           navigate("/", { replace: true });
           return;
@@ -106,7 +101,6 @@ const AuthWrapper = () => {
           "/requests": "/user/requests",
           "/requested": "/user/requested",
           "/explore": "/user/explore",
-          "/pending-verification": "/profile",
         };
         if (legacyAliases[location.pathname]) {
           setNavItems(config.navItems);
@@ -119,17 +113,21 @@ const AuthWrapper = () => {
 
         setNavItems(config.navItems);
 
-        // Pending users can only access profile.
+        // Pending users can only access the dedicated pending page.
         if (!verified) {
-          setShowPendingPopup(location.pathname !== "/profile");
+          setNavItems([]);
           setLoading(false);
-          if (location.pathname !== "/profile") {
-            navigate("/profile", { replace: true });
+          if (location.pathname !== "/pending-verification") {
+            navigate("/pending-verification", { replace: true });
           }
           return;
         }
 
-        setShowPendingPopup(false);
+        if (location.pathname === "/pending-verification") {
+          setLoading(false);
+          navigate(config.homePath, { replace: true });
+          return;
+        }
 
         const isProfilePath = location.pathname === "/profile";
         const isRolePath = location.pathname.startsWith(config.allowedPrefix);
@@ -144,7 +142,6 @@ const AuthWrapper = () => {
         console.error("AuthWrapper error:", error);
         setLoading(false);
         setNavItems([]);
-        setShowPendingPopup(false);
       }
     };
 
@@ -169,9 +166,6 @@ const AuthWrapper = () => {
 
   return (
     <NavContext.Provider value={navItems}>
-      {showPendingPopup && (
-        <PendingVerification onClose={() => setShowPendingPopup(false)} />
-      )}
       <Outlet />
     </NavContext.Provider>
   );

@@ -67,6 +67,7 @@ export const Web3Provider = ({ children }) => {
           const networkId = await web3Instance.eth.net.getId();
           setNetworkId(Number(networkId));
           setChainName(getNetworkName(Number(networkId)));
+          await loadContracts(web3Instance, Number(networkId));
 
           // Check if already connected
           const accounts = await web3Instance.eth.getAccounts();
@@ -75,7 +76,6 @@ export const Web3Provider = ({ children }) => {
             setCurrentAccount(accounts[0]);
             setIsConnected(true);
             await getBalance(web3Instance, accounts[0]);
-            await loadContracts(web3Instance, Number(networkId));
           }
 
           // Listen for account changes
